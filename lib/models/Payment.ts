@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IPayment extends Document {
-  invoiceId: mongoose.Types.ObjectId;
+  invoiceId?: mongoose.Types.ObjectId;
   amount: number;
   paymentMode: 'cash' | 'card' | 'upi' | 'netbanking';
   paymentDate: Date;
@@ -17,7 +17,7 @@ const PaymentSchema: Schema = new Schema(
     invoiceId: {
       type: Schema.Types.ObjectId,
       ref: 'Invoice',
-      required: true,
+      // Completely optional - no required field, allows null/undefined
     },
     amount: {
       type: Number,
@@ -53,8 +53,8 @@ const PaymentSchema: Schema = new Schema(
   }
 );
 
-// Indexes
-PaymentSchema.index({ invoiceId: 1 });
+// Indexes - make invoiceId index sparse so it doesn't require the field
+PaymentSchema.index({ invoiceId: 1 }, { sparse: true });
 PaymentSchema.index({ paymentDate: -1 });
 
 const Payment: Model<IPayment> =

@@ -27,11 +27,16 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const bookingId = searchParams.get('bookingId');
+    const status = searchParams.get('status');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '50');
 
     const query: any = {};
     if (bookingId) query.bookingId = new mongoose.Types.ObjectId(bookingId);
+    if (status) {
+      const statuses = status.split(',');
+      query.paymentStatus = { $in: statuses };
+    }
 
     const invoices = await Invoice.find(query)
       .sort({ createdAt: -1 })

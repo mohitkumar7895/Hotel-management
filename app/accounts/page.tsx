@@ -11,6 +11,8 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Plus,
+  CreditCard,
+  X,
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { format } from 'date-fns';
@@ -39,21 +41,63 @@ interface DashboardData {
 
 const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'];
 
+interface Payment {
+  _id: string;
+  amount: number;
+  paymentMode: string;
+  paymentDate: string;
+  reference?: string;
+  notes?: string;
+  invoiceId?: {
+    invoiceNumber: string;
+    guestName?: string;
+    totalAmount: number;
+    dueAmount: number;
+  };
+}
+
+interface Invoice {
+  _id: string;
+  invoiceNumber: string;
+  guestName?: string;
+  totalAmount: number;
+  paidAmount: number;
+  dueAmount: number;
+  paymentStatus: string;
+}
+
 export default function AccountsDashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [pendingInvoices, setPendingInvoices] = useState<Invoice[]>([]);
+  const [paymentForm, setPaymentForm] = useState({
+    invoiceId: '',
+    amount: '',
+    paymentMode: 'cash',
+    reference: '',
+    notes: '',
+  });
+  const [paymentLoading, setPaymentLoading] = useState(false);
 
   useEffect(() => {
     fetchDashboardData();
+    fetchPayments();
+    fetchPendingInvoices();
     
     // Auto-refresh every 30 seconds to show latest data
     const interval = setInterval(() => {
       fetchDashboardData();
+      fetchPayments();
+      fetchPendingInvoices();
     }, 30000);
     
     // Refresh when page becomes visible (after form submission)
     const handleFocus = () => {
       fetchDashboardData();
+      fetchPayments();
+      fetchPendingInvoices();
     };
     window.addEventListener('focus', handleFocus);
     
@@ -62,6 +106,95 @@ export default function AccountsDashboard() {
       window.removeEventListener('focus', handleFocus);
     };
   }, []);
+
+  const fetchPayments = async () => {
+    try {
+      const response = await fetch('/api/accounts/payments?limit=5');
+      if (response.ok) {
+        const result = await response.json();
+        setPayments(result.payments || []);
+      }
+    } catch (error) {
+      console.error('Failed to fetch payments:', error);
+    }
+  };
+
+  const fetchPendingInvoices = async () => {
+    try {
+      const response = await fetch('/api/accounts/invoices?status=pending,partial');
+      if (response.ok) {
+        const result = await response.json();
+        setPendingInvoices((result.invoices || []).filter((inv: Invoice) => inv.dueAmount > 0).slice(0, 5));
+      }
+    } catch (error) {
+      console.error('Failed to fetch pending invoices:', error);
+    }
+  };
+
+  const handlePaymentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!paymentForm.amount || parseFloat(paymentForm.amount) <= 0) {
+      alert('Please enter a valid payment amount');
+      return;
+    }
+
+    setPaymentLoading(true);
+    try {
+      // Build request body - only include invoiceId if it's not empty
+      const requestBody: any = {
+        amount: parseFloat(paymentForm.amount),
+        paymentMode: paymentForm.paymentMode,
+      };
+
+      // Only add invoiceId if it's provided and not empty
+      if (paymentForm.invoiceId && paymentForm.invoiceId.trim() !== '') {
+        requestBody.invoiceId = paymentForm.invoiceId.trim();
+      }
+
+      // Add optional fields only if they have values
+      if (paymentForm.reference && paymentForm.reference.trim() !== '') {
+        requestBody.reference = paymentForm.reference.trim();
+      }
+      if (paymentForm.notes && paymentForm.notes.trim() !== '') {
+        requestBody.notes = paymentForm.notes.trim();
+      }
+
+      console.log('Submitting payment:', requestBody);
+
+      const response = await fetch('/api/accounts/payments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+      });
+
+      const result = await response.json();
+      console.log('Payment response:', result);
+      
+      if (response.ok) {
+        alert('✅ Payment recorded successfully to MongoDB Atlas!');
+        setPaymentForm({
+          invoiceId: '',
+          amount: '',
+          paymentMode: 'cash',
+          reference: '',
+          notes: '',
+        });
+        setShowPaymentForm(false);
+        fetchDashboardData();
+        fetchPayments();
+        fetchPendingInvoices();
+      } else {
+        alert(`❌ Error: ${result.error || 'Failed to record payment'}`);
+        console.error('Payment error details:', result);
+      }
+    } catch (error) {
+      console.error('Failed to record payment:', error);
+      alert('Failed to record payment. Please check console for details.');
+    } finally {
+      setPaymentLoading(false);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -471,6 +604,251 @@ export default function AccountsDashboard() {
           </table>
         </div>
       </div>
+
+      {/* Payment Management Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Quick Payment Form */}
+        <div className="bg-[#1e293b] rounded-lg border border-[#334155] p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-white">Quick Payment</h2>
+            {!showPaymentForm ? (
+              <button
+                onClick={() => setShowPaymentForm(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+              >
+                <CreditCard className="w-4 h-4" />
+                Record Payment
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  setShowPaymentForm(false);
+                  setPaymentForm({
+                    invoiceId: '',
+                    amount: '',
+                    paymentMode: 'cash',
+                    reference: '',
+                    notes: '',
+                  });
+                }}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+
+          {showPaymentForm && (
+            <form onSubmit={handlePaymentSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2">
+                  Invoice (Optional)
+                </label>
+                <select
+                  value={paymentForm.invoiceId}
+                  onChange={(e) => {
+                    setPaymentForm({ ...paymentForm, invoiceId: e.target.value });
+                    if (e.target.value) {
+                      const invoice = pendingInvoices.find(inv => inv._id === e.target.value);
+                      if (invoice) {
+                        setPaymentForm(prev => ({ ...prev, amount: invoice.dueAmount.toString() }));
+                      }
+                    }
+                  }}
+                  className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-4 py-2 text-white"
+                >
+                  <option value="">No Invoice (Direct Payment)</option>
+                  {pendingInvoices.map((invoice) => (
+                    <option key={invoice._id} value={invoice._id}>
+                      {invoice.invoiceNumber} - Due: {formatCurrency(invoice.dueAmount)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                    Amount (₹) <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min="0.01"
+                    step="0.01"
+                    value={paymentForm.amount}
+                    onChange={(e) => setPaymentForm({ ...paymentForm, amount: e.target.value })}
+                    className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-4 py-2 text-white"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                    Payment Mode <span className="text-red-400">*</span>
+                  </label>
+                  <select
+                    required
+                    value={paymentForm.paymentMode}
+                    onChange={(e) => setPaymentForm({ ...paymentForm, paymentMode: e.target.value })}
+                    className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-4 py-2 text-white"
+                  >
+                    <option value="cash">Cash</option>
+                    <option value="card">Card</option>
+                    <option value="upi">UPI</option>
+                    <option value="netbanking">Net Banking</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2">Reference</label>
+                <input
+                  type="text"
+                  value={paymentForm.reference}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, reference: e.target.value })}
+                  className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-4 py-2 text-white"
+                  placeholder="Transaction ID, Check No, etc."
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-2">Notes</label>
+                <textarea
+                  value={paymentForm.notes}
+                  onChange={(e) => setPaymentForm({ ...paymentForm, notes: e.target.value })}
+                  rows={2}
+                  className="w-full bg-[#0f172a] border border-[#334155] rounded-lg px-4 py-2 text-white"
+                  placeholder="Additional notes..."
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={paymentLoading}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {paymentLoading ? 'Recording...' : 'Record Payment'}
+              </button>
+            </form>
+          )}
+
+          {!showPaymentForm && (
+            <div className="text-center py-8 text-gray-400">
+              <CreditCard className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <p>Click "Record Payment" to add a new payment</p>
+            </div>
+          )}
+        </div>
+
+        {/* Recent Payments */}
+        <div className="bg-[#1e293b] rounded-lg border border-[#334155] p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-white">Recent Payments</h2>
+            <Link
+              href="/accounts/invoices"
+              className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
+            >
+              View All
+              <ArrowUpRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="space-y-3">
+            {payments.length === 0 ? (
+              <div className="text-center py-8 text-gray-400">
+                <p>No payments recorded yet</p>
+              </div>
+            ) : (
+              payments.map((payment) => (
+                <div
+                  key={payment._id}
+                  className="bg-[#0f172a] rounded-lg p-4 border border-[#334155]"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <p className="text-white font-semibold">
+                        {formatCurrency(payment.amount)}
+                      </p>
+                      {payment.invoiceId && (
+                        <p className="text-gray-400 text-sm">
+                          Invoice: {payment.invoiceId.invoiceNumber}
+                        </p>
+                      )}
+                    </div>
+                    <span className="px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs capitalize">
+                      {payment.paymentMode}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm text-gray-400">
+                    <span>{format(new Date(payment.paymentDate), 'MMM dd, yyyy')}</span>
+                    {payment.reference && (
+                      <span className="text-xs">Ref: {payment.reference}</span>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Pending Invoices */}
+      {pendingInvoices.length > 0 && (
+        <div className="bg-[#1e293b] rounded-lg border border-[#334155] p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-white">Pending Payments</h2>
+            <Link
+              href="/accounts/invoices"
+              className="text-blue-400 hover:text-blue-300 text-sm flex items-center gap-1"
+            >
+              View All
+              <ArrowUpRight className="w-4 h-4" />
+            </Link>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[#334155]">
+                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Invoice #</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Total</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Paid</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Due</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Status</th>
+                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pendingInvoices.map((invoice) => (
+                  <tr key={invoice._id} className="border-b border-[#334155] hover:bg-[#0f172a]">
+                    <td className="py-3 px-4 text-white">{invoice.invoiceNumber}</td>
+                    <td className="py-3 px-4 text-gray-300">{formatCurrency(invoice.totalAmount)}</td>
+                    <td className="py-3 px-4 text-green-400">{formatCurrency(invoice.paidAmount)}</td>
+                    <td className="py-3 px-4 text-red-400 font-semibold">{formatCurrency(invoice.dueAmount)}</td>
+                    <td className="py-3 px-4">
+                      <span className={`px-2 py-1 rounded text-xs ${
+                        invoice.paymentStatus === 'paid' 
+                          ? 'bg-green-500/20 text-green-400'
+                          : invoice.paymentStatus === 'partial'
+                          ? 'bg-yellow-500/20 text-yellow-400'
+                          : 'bg-red-500/20 text-red-400'
+                      }`}>
+                        {invoice.paymentStatus}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <Link
+                        href={`/accounts/invoices/${invoice._id}`}
+                        className="text-blue-400 hover:text-blue-300 text-sm"
+                      >
+                        View & Pay
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
