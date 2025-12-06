@@ -6,6 +6,8 @@ import { authenticateRequest, canEdit } from '@/lib/auth-utils';
 import { logAudit } from '@/lib/audit-log';
 import mongoose from 'mongoose';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }

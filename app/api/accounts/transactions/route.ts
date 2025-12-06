@@ -5,6 +5,8 @@ import { authenticateRequest, canView, canEdit } from '@/lib/auth-utils';
 import { logAudit } from '@/lib/audit-log';
 import mongoose from 'mongoose';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     const authResult = await authenticateRequest(request);

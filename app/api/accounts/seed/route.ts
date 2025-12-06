@@ -8,6 +8,8 @@ import Booking from '@/lib/models/Booking';
 import Guest from '@/lib/models/Guest';
 import Room from '@/lib/models/Room';
 import User from '@/lib/models/User';
+
+export const dynamic = 'force-dynamic';
 import mongoose from 'mongoose';
 
 export async function POST(request: NextRequest) {

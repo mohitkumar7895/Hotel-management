@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Settings from '@/lib/models/Settings';
 
+export const dynamic = 'force-dynamic';
+
 // GET - Fetch settings (always returns one document, creates default if none exists)
 export async function GET(request: NextRequest) {
   try {

@@ -4,6 +4,8 @@ import ServiceRequest from '@/lib/models/ServiceRequest';
 import User from '@/lib/models/User';
 import mongoose from 'mongoose';
 
+export const dynamic = 'force-dynamic';
+
 // GET - Fetch all service requests with filters
 export async function GET(request: NextRequest) {
   try {

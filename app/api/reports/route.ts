@@ -7,6 +7,8 @@ import ServiceBooking from '@/lib/models/ServiceBooking';
 import Guest from '@/lib/models/Guest';
 import { startOfDay, endOfDay, startOfMonth, endOfMonth, startOfYear, endOfYear, subDays, subMonths } from 'date-fns';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
     await connectDB();

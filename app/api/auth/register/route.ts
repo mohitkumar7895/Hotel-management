@@ -4,6 +4,8 @@ import User from '@/lib/models/User';
 import { hashPassword } from '@/lib/auth';
 import { signJwt } from '@/lib/jwt';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();

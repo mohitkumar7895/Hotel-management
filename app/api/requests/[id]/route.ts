@@ -3,6 +3,8 @@ import connectDB from '@/lib/mongodb';
 import ServiceRequest from '@/lib/models/ServiceRequest';
 import mongoose from 'mongoose';
 
+export const dynamic = 'force-dynamic';
+
 // GET - Fetch single request
 export async function GET(
   request: NextRequest,

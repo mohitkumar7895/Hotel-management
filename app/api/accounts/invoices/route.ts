@@ -8,6 +8,8 @@ import RoomType from '@/lib/models/RoomType';
 import Transaction from '@/lib/models/Transaction';
 import { authenticateRequest, canView, canEdit } from '@/lib/auth-utils';
 import { logAudit } from '@/lib/audit-log';
+
+export const dynamic = 'force-dynamic';
 import mongoose from 'mongoose';
 
 // Generate invoice number

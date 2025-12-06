@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import ExtraService from '@/lib/models/ExtraService';
 
+export const dynamic = 'force-dynamic';
+
 // GET - Fetch single service
 export async function GET(
   request: NextRequest,

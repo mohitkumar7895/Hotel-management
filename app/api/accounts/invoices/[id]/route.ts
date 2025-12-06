@@ -4,6 +4,8 @@ import Invoice from '@/lib/models/Invoice';
 import { authenticateRequest, canView, canEdit } from '@/lib/auth-utils';
 import { logAudit } from '@/lib/audit-log';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { id: string } }

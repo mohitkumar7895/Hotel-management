@@ -4,6 +4,8 @@ import Transaction from '@/lib/models/Transaction';
 import { authenticateRequest, canEdit } from '@/lib/auth-utils';
 import { logAudit } from '@/lib/audit-log';
 
+export const dynamic = 'force-dynamic';
+
 export async function PUT(
   request: NextRequest,
   { params }: { params: { id: string } }

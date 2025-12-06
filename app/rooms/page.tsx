@@ -3,6 +3,8 @@ import Room from '@/lib/models/Room';
 import RoomType from '@/lib/models/RoomType';
 import RoomsList from '@/components/RoomsList';
 
+export const dynamic = 'force-dynamic';
+
 export default async function RoomsPage() {
 
   await connectDB();

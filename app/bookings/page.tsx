@@ -2,6 +2,8 @@ import connectDB from '@/lib/mongodb';
 import Booking from '@/lib/models/Booking';
 import BookingsList from '@/components/BookingsList';
 
+export const dynamic = 'force-dynamic';
+
 export default async function BookingsPage() {
 
   await connectDB();

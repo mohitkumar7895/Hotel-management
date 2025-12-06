@@ -3,6 +3,8 @@ import connectDB from '@/lib/mongodb';
 import ExtraService from '@/lib/models/ExtraService';
 import User from '@/lib/models/User';
 
+export const dynamic = 'force-dynamic';
+
 // GET - Fetch all extra services with filters
 export async function GET(request: NextRequest) {
   try {

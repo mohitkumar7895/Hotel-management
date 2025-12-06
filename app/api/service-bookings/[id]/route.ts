@@ -5,6 +5,8 @@ import Transaction from '@/lib/models/Transaction';
 import User from '@/lib/models/User';
 import mongoose from 'mongoose';
 
+export const dynamic = 'force-dynamic';
+
 // GET - Fetch single service booking
 export async function GET(
   request: NextRequest,

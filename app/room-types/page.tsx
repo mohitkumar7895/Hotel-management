@@ -2,6 +2,8 @@ import connectDB from '@/lib/mongodb';
 import RoomType from '@/lib/models/RoomType';
 import RoomTypesList from '@/components/RoomTypesList';
 
+export const dynamic = 'force-dynamic';
+
 export default async function RoomTypesPage() {
 
   await connectDB();

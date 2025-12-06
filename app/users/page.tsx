@@ -2,6 +2,8 @@ import connectDB from '@/lib/mongodb';
 import User from '@/lib/models/User';
 import UsersList from '@/components/UsersList';
 
+export const dynamic = 'force-dynamic';
+
 export default async function UsersPage() {
 
   await connectDB();

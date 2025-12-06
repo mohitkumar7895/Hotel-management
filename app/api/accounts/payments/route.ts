@@ -6,6 +6,8 @@ import Transaction from '@/lib/models/Transaction';
 import User from '@/lib/models/User';
 import mongoose from 'mongoose';
 
+export const dynamic = 'force-dynamic';
+
 // Get all payments with filters
 export async function GET(request: NextRequest) {
   try {
