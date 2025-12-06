@@ -60,12 +60,20 @@ export default function EditRoomTypePage({ params }: { params: { id: string } })
         if (data.roomType) {
           setRoomType(data.roomType);
           const roomTypeName = data.roomType.name;
-          setValue('name', roomTypeName);
+          // Set room type name in state (not in form schema)
+          if (roomTypeOptions.includes(roomTypeName)) {
+            setSelectedRoomType(roomTypeName);
+          } else {
+            setCustomRoomType(roomTypeName);
+          }
           setValue('description', data.roomType.description);
           setValue('price', data.roomType.price.toString());
           setValue('amenities', data.roomType.amenities.join(', '));
           setValue('maxGuests', data.roomType.maxGuests.toString());
-          setValue('image', data.roomType.image || '');
+          // Image is handled separately via selectedImage state
+          if (data.roomType.image) {
+            setImagePreview(data.roomType.image);
+          }
           
           // Set image preview if existing image
           if (data.roomType.image) {
@@ -90,7 +98,7 @@ export default function EditRoomTypePage({ params }: { params: { id: string } })
     const file = e.target.files?.[0];
     if (file) {
       setSelectedImage(file);
-      setValue('image', file);
+      // Image is handled via selectedImage state, not form schema
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -326,9 +334,7 @@ export default function EditRoomTypePage({ params }: { params: { id: string } })
                 />
               </div>
             )}
-            {errors.image && (
-              <p className="mt-1 text-sm text-red-400">{errors.image.message}</p>
-            )}
+            {/* Image validation is handled separately, not in form schema */}
             <p className="mt-2 text-xs text-gray-400">
               Supported formats: JPEG, PNG, WEBP, GIF (Max 5MB)
             </p>

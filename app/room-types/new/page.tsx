@@ -56,7 +56,7 @@ export default function NewRoomTypePage() {
     const file = e.target.files?.[0];
     if (file) {
       setSelectedImage(file);
-      setValue('image', file);
+      // Image is handled via selectedImage state, not form schema
       // Create preview
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -288,9 +288,7 @@ export default function NewRoomTypePage() {
                 />
               </div>
             )}
-            {errors.image && (
-              <p className="mt-1 text-sm text-red-400">{errors.image.message}</p>
-            )}
+            {/* Image validation is handled separately, not in form schema */}
             <p className="mt-2 text-xs text-gray-400">
               Supported formats: JPEG, PNG, WEBP, GIF (Max 5MB)
             </p>

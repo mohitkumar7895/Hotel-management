@@ -136,7 +136,7 @@ export default function ReportsPage() {
     }
   };
 
-  const handleExport = async (format: 'csv' | 'pdf') => {
+  const handleExport = async (exportFormat: 'csv' | 'pdf') => {
     if (!data) return;
 
     try {
@@ -192,7 +192,7 @@ export default function ReportsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
+      <div>
           <h1 className="text-2xl font-bold text-white mb-2">Reports & Analytics</h1>
           <p className="text-gray-400">Live financial, occupancy, and booking reports</p>
         </div>
