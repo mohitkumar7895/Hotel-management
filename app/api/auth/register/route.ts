@@ -7,12 +7,12 @@ import { signJwt } from '@/lib/jwt';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { name, email, password, phone, role } = body;
+    const { email, password, role } = body;
 
     // Validation
-    if (!name || !email || !password) {
+    if (!email || !password) {
       return NextResponse.json(
-        { error: 'Name, email, and password are required' },
+        { error: 'Email and password are required' },
         { status: 400 }
       );
     }
@@ -41,10 +41,8 @@ export async function POST(request: NextRequest) {
 
     // Create user
     const user = await User.create({
-      name,
       email: email.toLowerCase(),
       password: hashedPassword,
-      phone: phone || '',
       role: role || 'staff',
     });
 
@@ -62,7 +60,6 @@ export async function POST(request: NextRequest) {
         message: 'User registered successfully',
         user: {
           id: user._id.toString(),
-          name: user.name,
           email: user.email,
           role: user.role,
         },
@@ -88,4 +85,5 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
 

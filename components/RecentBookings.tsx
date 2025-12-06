@@ -98,3 +98,4 @@ export default function RecentBookings({ bookings }: { bookings: Booking[] }) {
 }
 
 
+

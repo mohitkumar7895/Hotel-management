@@ -9,11 +9,9 @@ export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    phone: '',
     role: 'staff',
   });
 
@@ -29,7 +27,7 @@ export default function RegisterPage() {
     setLoading(true);
 
     // Validation
-    if (!formData.name || !formData.email || !formData.password) {
+    if (!formData.email || !formData.password) {
       toast.error('Please fill in all required fields');
       setLoading(false);
       return;
@@ -55,10 +53,8 @@ export default function RegisterPage() {
         },
         credentials: 'include',
         body: JSON.stringify({
-          name: formData.name,
           email: formData.email,
           password: formData.password,
-          phone: formData.phone,
           role: formData.role,
         }),
       });
@@ -91,22 +87,6 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
-                Full Name *
-              </label>
-              <input
-                type="text"
-                id="name"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                required
-                className="w-full px-4 py-3 bg-[#0f172a] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter your name"
-              />
-            </div>
-
-            <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
                 Email Address *
               </label>
@@ -119,21 +99,6 @@ export default function RegisterPage() {
                 required
                 className="w-full px-4 py-3 bg-[#0f172a] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Enter your email"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-2">
-                Phone Number
-              </label>
-              <input
-                type="tel"
-                id="phone"
-                name="phone"
-                value={formData.phone}
-                onChange={handleChange}
-                className="w-full px-4 py-3 bg-[#0f172a] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter your phone"
               />
             </div>
 

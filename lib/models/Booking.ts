@@ -58,3 +58,4 @@ const Booking: Model<IBooking> = mongoose.models.Booking || mongoose.model<IBook
 export default Booking;
 
 
+

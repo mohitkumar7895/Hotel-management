@@ -50,3 +50,4 @@ const RoomType: Model<IRoomType> = mongoose.models.RoomType || mongoose.model<IR
 export default RoomType;
 
 
+
