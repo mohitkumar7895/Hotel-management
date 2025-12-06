@@ -4,7 +4,7 @@ export interface IUser extends Document {
   name?: string;
   email: string;
   password: string;
-  role: 'admin' | 'staff';
+  role: 'admin' | 'staff' | 'accountant';
   phone?: string;
   profileImage?: string;
   createdAt: Date;
@@ -29,11 +29,11 @@ const UserSchema: Schema = new Schema(
       required: [true, 'Password is required'],
       minlength: 6,
     },
-    role: {
-      type: String,
-      enum: ['admin', 'staff'],
-      default: 'staff',
-    },
+  role: {
+    type: String,
+    enum: ['admin', 'staff', 'accountant'],
+    default: 'staff',
+  },
     phone: {
       type: String,
       trim: true,
