@@ -193,27 +193,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           mobileMenuOpen ? 'fixed inset-y-0 left-0 z-50' : 'hidden md:flex'
         }`}
       >
-        <div className="h-16 flex items-center justify-between px-4 border-b border-[#334155]">
+        <div className="h-16 flex items-center justify-between px-3 sm:px-4 border-b border-[#334155]">
           {sidebarOpen && (
-            <h1 className="text-xl font-bold text-white">Hotel System</h1>
+            <h1 className="text-base sm:text-lg md:text-xl font-bold text-white truncate">Hotel System</h1>
           )}
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="text-gray-400 hover:text-white transition-colors"
+            className="text-gray-400 hover:text-white transition-colors p-1 flex-shrink-0"
+            aria-label="Toggle sidebar"
           >
             {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto py-4">
-          <ul className="space-y-1 px-2">
+        <nav className="flex-1 overflow-y-auto py-2 sm:py-4">
+          <ul className="space-y-1 px-1 sm:px-2">
             {menuItems.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
               return (
                 <li key={item.name}>
                   <Link
                     href={item.href}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 rounded-lg transition-colors text-sm sm:text-base ${
                       isActive
                         ? 'bg-[#3b82f6] text-white'
                         : 'text-gray-300 hover:bg-[#334155] hover:text-white'
@@ -223,9 +224,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <span className="flex-shrink-0">{item.icon}</span>
                     {sidebarOpen && (
                       <>
-                        <span className="flex-1">{item.name}</span>
+                        <span className="flex-1 truncate">{item.name}</span>
                         {item.hasSubmenu && (
-                          <ChevronRight className="w-4 h-4 flex-shrink-0" />
+                          <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
                         )}
                       </>
                     )}
@@ -238,18 +239,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </aside>
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="h-16 bg-[#1e293b] border-b border-[#334155] flex items-center justify-between px-6">
-          <div className="flex items-center gap-4">
+        <header className="h-16 bg-[#1e293b] border-b border-[#334155] flex items-center justify-between px-3 sm:px-4 md:px-6">
+          <div className="flex items-center gap-2 sm:gap-4">
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden text-gray-400 hover:text-white"
+              className="md:hidden text-gray-400 hover:text-white p-1"
+              aria-label="Toggle menu"
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
-            <h2 className="text-lg font-semibold text-white">Hotel Name</h2>
+            <h2 className="text-base sm:text-lg font-semibold text-white truncate">Hotel Name</h2>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
             {/* Notifications */}
             <div className="relative notification-menu">
               <button
@@ -263,16 +265,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full"></span>
               </button>
               {notificationsOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-[#1e293b] border border-[#334155] rounded-lg shadow-lg z-50">
-                  <div className="p-4 border-b border-[#334155]">
-                    <h3 className="text-white font-semibold">Notifications</h3>
-                  </div>
-                  <div className="max-h-96 overflow-y-auto">
-                    <div className="p-4 text-center text-gray-400 text-sm">
-                      No new notifications
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setNotificationsOpen(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-80 max-w-sm bg-[#1e293b] border border-[#334155] rounded-lg shadow-lg z-50">
+                    <div className="p-4 border-b border-[#334155]">
+                      <h3 className="text-white font-semibold">Notifications</h3>
+                    </div>
+                    <div className="max-h-96 overflow-y-auto">
+                      <div className="p-4 text-center text-gray-400 text-sm">
+                        No new notifications
+                      </div>
                     </div>
                   </div>
-                </div>
+                </>
               )}
             </div>
 
@@ -292,28 +300,28 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   setUserMenuOpen(!userMenuOpen);
                   setNotificationsOpen(false);
                 }}
-                className="flex items-center gap-3 hover:bg-[#334155] px-3 py-2 rounded-lg transition-colors cursor-pointer"
+                className="flex items-center gap-2 sm:gap-3 hover:bg-[#334155] px-2 sm:px-3 py-2 rounded-lg transition-colors cursor-pointer"
                 title="User Menu"
               >
                 {user?.profileImage ? (
                   <img
                     src={`${user.profileImage}?t=${Date.now()}`}
                     alt={user.name || 'User'}
-                    className="w-8 h-8 rounded-full object-cover"
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full object-cover"
                     key={`header-${user.profileImage}-${Date.now()}`}
                     onError={(e) => {
                       console.error('Header image failed to load:', user.profileImage);
                     }}
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-sm sm:text-base">
                     {mounted && user ? (user.name && user.name.trim() ? user.name.trim()[0].toUpperCase() : (user.email ? user.email[0].toUpperCase() : 'U')) : 'U'}
                   </div>
                 )}
-                <span className="text-white font-medium hidden sm:block">
+                <span className="text-white font-medium hidden sm:block text-sm sm:text-base">
                   {mounted && user ? (user.name && user.name.trim() ? user.name.trim() : (user.email ? user.email.split('@')[0] : 'User')) : 'User'}
                 </span>
-                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-3 h-3 sm:w-4 sm:h-4 text-gray-400 transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {userMenuOpen && (
@@ -322,7 +330,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     className="fixed inset-0 z-40"
                     onClick={() => setUserMenuOpen(false)}
                   />
-                  <div className="absolute right-0 mt-2 w-64 bg-[#1e293b] border border-[#334155] rounded-lg shadow-xl z-50 overflow-hidden">
+                  <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-64 max-w-xs bg-[#1e293b] border border-[#334155] rounded-lg shadow-xl z-50 overflow-hidden">
                     <div className="p-4 border-b border-[#334155] bg-[#0f172a]">
                     <div className="flex items-center gap-3">
                       {user?.profileImage ? (
@@ -391,11 +399,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">{children}</main>
 
-        <footer className="h-12 bg-[#1e293b] border-t border-[#334155] flex items-center justify-between px-6 text-sm text-gray-400">
-          <span>Hotel system Powered By: SecLance</span>
-          <span>Version 1.0</span>
+        <footer className="h-12 bg-[#1e293b] border-t border-[#334155] flex items-center justify-between px-3 sm:px-4 md:px-6 text-xs sm:text-sm text-gray-400">
+          <span className="truncate mr-2">Hotel system Powered By: SecLance</span>
+          <span className="flex-shrink-0">Version 1.0</span>
         </footer>
       </div>
 

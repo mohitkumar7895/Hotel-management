@@ -113,55 +113,55 @@ export default function EditProfilePage() {
           <p className="text-gray-400">Update your profile information</p>
         </div>
 
-        <div className="bg-[#1e293b] rounded-lg border border-[#334155] p-6">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <div className="bg-[#1e293b] rounded-lg border border-[#334155] p-4 sm:p-5 md:p-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1 sm:mb-2">
                 Full Name
               </label>
               <input
                 {...register('name')}
                 type="text"
                 id="name"
-                className="w-full px-4 py-3 bg-[#0f172a] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base bg-[#0f172a] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
               {errors.name && (
-                <p className="mt-1 text-sm text-red-400">{errors.name.message}</p>
+                <p className="mt-1 text-xs sm:text-sm text-red-400">{errors.name.message}</p>
               )}
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1 sm:mb-2">
                 Email Address
               </label>
               <input
                 {...register('email')}
                 type="email"
                 id="email"
-                className="w-full px-4 py-3 bg-[#0f172a] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base bg-[#0f172a] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600"
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-400">{errors.email.message}</p>
+                <p className="mt-1 text-xs sm:text-sm text-red-400">{errors.email.message}</p>
               )}
             </div>
 
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-2">
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-1 sm:mb-2">
                 Phone Number (Optional)
               </label>
               <input
                 {...register('phone')}
                 type="tel"
                 id="phone"
-                className="w-full px-4 py-3 bg-[#0f172a] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base bg-[#0f172a] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600"
                 placeholder="+1234567890"
               />
               {errors.phone && (
-                <p className="mt-1 text-sm text-red-400">{errors.phone.message}</p>
+                <p className="mt-1 text-xs sm:text-sm text-red-400">{errors.phone.message}</p>
               )}
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
               <button
                 type="submit"
                 disabled={isLoading}

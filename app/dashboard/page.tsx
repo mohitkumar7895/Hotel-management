@@ -252,24 +252,26 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-white mb-2">Dashboard</h1>
-        <p className="text-gray-400">Welcome back, {user?.name || 'User'}!</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2">Dashboard</h1>
+        <p className="text-sm sm:text-base text-gray-400">Welcome back, {user?.name || 'User'}!</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
         {statCards.map((stat, index) => (
           <div
             key={index}
-            className="bg-[#1e293b] rounded-lg p-6 border border-[#334155] hover:border-[#475569] transition-colors"
+            className="bg-[#1e293b] rounded-lg p-4 sm:p-5 md:p-6 border border-[#334155] hover:border-[#475569] transition-colors"
           >
             <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-400 text-sm mb-1">{stat.title}</p>
-                <p className="text-2xl font-bold text-white">{stat.value}</p>
+              <div className="flex-1 min-w-0">
+                <p className="text-gray-400 text-xs sm:text-sm mb-1 truncate">{stat.title}</p>
+                <p className="text-lg sm:text-xl md:text-2xl font-bold text-white truncate">{stat.value}</p>
               </div>
-              <div className={`${stat.color} p-3 rounded-lg`}>{stat.icon}</div>
+              <div className={`${stat.color} p-2 sm:p-2.5 md:p-3 rounded-lg flex-shrink-0`}>
+                <div className="w-5 h-5 sm:w-6 sm:h-6">{stat.icon}</div>
+              </div>
             </div>
           </div>
         ))}

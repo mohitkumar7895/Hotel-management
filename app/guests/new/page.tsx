@@ -84,42 +84,42 @@ export default function NewGuestPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f172a] p-6">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className="min-h-screen bg-[#0f172a] p-3 sm:p-4 md:p-6">
+      <div className="max-w-2xl mx-auto space-y-4 sm:space-y-6">
       {/* Back Button */}
       <Link 
         href="/guests" 
-        className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-4"
+        className="inline-flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-2 sm:mb-4 text-sm sm:text-base"
       >
         <ArrowLeft className="w-4 h-4" />
         <span>Back to Guests</span>
       </Link>
 
       {/* Header Card */}
-      <div className="bg-[#1e293b] rounded-lg border border-[#334155] p-6">
-        <h1 className="text-2xl font-bold text-white mb-2">Add Guest</h1>
-        <p className="text-gray-400">Register a new guest</p>
+      <div className="bg-[#1e293b] rounded-lg border border-[#334155] p-4 sm:p-5 md:p-6">
+        <h1 className="text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2">Add Guest</h1>
+        <p className="text-sm sm:text-base text-gray-400">Register a new guest</p>
       </div>
 
       {/* Form Card */}
-      <div className="bg-[#1e293b] rounded-lg border border-[#334155] p-6">
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div className="bg-[#1e293b] rounded-lg border border-[#334155] p-4 sm:p-5 md:p-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 sm:space-y-6">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-1 sm:mb-2">
               Full Name
             </label>
             <input
               {...register('name')}
               type="text"
               id="name"
-              className="w-full px-4 py-3 bg-[#0f172a] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600"
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-sm sm:text-base bg-[#0f172a] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-600"
             />
             {errors.name && (
-              <p className="mt-1 text-sm text-red-400">{errors.name.message}</p>
+              <p className="mt-1 text-xs sm:text-sm text-red-400">{errors.name.message}</p>
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-2">
                 Phone

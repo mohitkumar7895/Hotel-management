@@ -217,28 +217,28 @@ export default function NewRequestPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex items-center gap-2 sm:gap-4">
         <Link
           href="/requests"
-          className="text-gray-400 hover:text-white transition-colors"
+          className="text-gray-400 hover:text-white transition-colors p-1"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-white mb-2">New Service Request</h1>
-          <p className="text-gray-400">Create a new service request for a guest</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2">New Service Request</h1>
+          <p className="text-sm sm:text-base text-gray-400">Create a new service request for a guest</p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-[#1e293b] rounded-lg border border-[#334155] p-6 space-y-6">
+      <form onSubmit={handleSubmit} className="bg-[#1e293b] rounded-lg border border-[#334155] p-4 sm:p-5 md:p-6 space-y-4 sm:space-y-6">
         {/* Basic Information */}
-        <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-white border-b border-[#334155] pb-2">
+        <div className="space-y-3 sm:space-y-4">
+          <h2 className="text-base sm:text-lg font-semibold text-white border-b border-[#334155] pb-2">
             Basic Information
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 Room <span className="text-red-400">*</span>

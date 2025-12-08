@@ -57,23 +57,23 @@ export default function GuestsList({ guests }: { guests: Guest[] }) {
 
   return (
     <div className="bg-[#1e293b] rounded-lg border border-[#334155] overflow-hidden">
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto responsive-table-wrapper">
         <table className="w-full">
           <thead>
             <tr className="border-b border-[#334155]">
-              <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Name</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Contact</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Room Type</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Address</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Check-in</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Check-out</th>
-              <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Actions</th>
+              <th className="text-left py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-xs sm:text-sm font-medium text-gray-400 whitespace-nowrap">Name</th>
+              <th className="text-left py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-xs sm:text-sm font-medium text-gray-400 whitespace-nowrap">Contact</th>
+              <th className="text-left py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-xs sm:text-sm font-medium text-gray-400 whitespace-nowrap hidden md:table-cell">Room Type</th>
+              <th className="text-left py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-xs sm:text-sm font-medium text-gray-400 whitespace-nowrap hidden lg:table-cell">Address</th>
+              <th className="text-left py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-xs sm:text-sm font-medium text-gray-400 whitespace-nowrap">Check-in</th>
+              <th className="text-left py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-xs sm:text-sm font-medium text-gray-400 whitespace-nowrap hidden sm:table-cell">Check-out</th>
+              <th className="text-left py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-xs sm:text-sm font-medium text-gray-400 whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody>
             {guests.map((guest) => (
               <tr key={guest._id} className="border-b border-[#334155] hover:bg-[#0f172a]">
-                <td className="py-3 px-4">
+                <td className="py-2 sm:py-3 px-2 sm:px-3 md:px-4">
                   <div>
                     <p className="text-white font-medium">{guest.name}</p>
                     <p className="text-gray-400 text-xs">{guest.idProof}</p>
@@ -105,26 +105,28 @@ export default function GuestsList({ guests }: { guests: Guest[] }) {
                 <td className="py-3 px-4 text-gray-300 text-sm">
                   {guest.address || '-'}
                 </td>
-                <td className="py-3 px-4 text-gray-300">
+                <td className="py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-gray-300 text-xs sm:text-sm">
                   {guest.checkIn ? format(new Date(guest.checkIn), 'MMM dd, yyyy') : '-'}
                 </td>
-                <td className="py-3 px-4 text-gray-300">
+                <td className="py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-gray-300 text-xs sm:text-sm hidden sm:table-cell">
                   {guest.checkOut ? format(new Date(guest.checkOut), 'MMM dd, yyyy') : '-'}
                 </td>
-                <td className="py-3 px-4">
+                <td className="py-2 sm:py-3 px-2 sm:px-3 md:px-4">
                   <div className="flex items-center gap-2">
                     <Link
                       href={`/guests/${guest._id}/edit`}
-                      className="text-blue-400 hover:text-blue-300"
+                      className="text-blue-400 hover:text-blue-300 p-1"
+                      title="Edit"
                     >
-                      <Edit className="w-4 h-4" />
+                      <Edit className="w-4 h-4 sm:w-5 sm:h-5" />
                     </Link>
                     <button
                       onClick={() => handleDelete(guest._id)}
                       disabled={deleting === guest._id}
-                      className="text-red-400 hover:text-red-300 disabled:opacity-50"
+                      className="text-red-400 hover:text-red-300 disabled:opacity-50 p-1"
+                      title="Delete"
                     >
-                      <Trash2 className="w-4 h-4" />
+                      <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                     </button>
                   </div>
                 </td>

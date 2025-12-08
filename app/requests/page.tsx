@@ -204,27 +204,27 @@ export default function RequestsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
-            <Bell className="w-6 h-6" />
+          <h1 className="text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2 flex items-center gap-2">
+            <Bell className="w-5 h-5 sm:w-6 sm:h-6" />
             Service Requests
           </h1>
-          <p className="text-gray-400">Manage guest service requests in real-time</p>
+          <p className="text-sm sm:text-base text-gray-400">Manage guest service requests in real-time</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
           <button
             onClick={fetchRequests}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+            className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 sm:py-2 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
           >
             <RefreshCw className="w-4 h-4" />
             Refresh
           </button>
           <a
             href="/requests/new"
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+            className="w-full sm:w-auto bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 sm:py-2 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
           >
             <Plus className="w-4 h-4" />
             New Request
@@ -234,47 +234,47 @@ export default function RequestsPage() {
 
       {/* Statistics Cards */}
       {statistics && (
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="bg-[#1e293b] rounded-lg border border-[#334155] p-4">
-            <div className="text-gray-400 text-sm mb-1">Pending</div>
-            <div className="text-2xl font-bold text-yellow-500">{pendingCount}</div>
+        <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="bg-[#1e293b] rounded-lg border border-[#334155] p-3 sm:p-4">
+            <div className="text-gray-400 text-xs sm:text-sm mb-1">Pending</div>
+            <div className="text-xl sm:text-2xl font-bold text-yellow-500">{pendingCount}</div>
           </div>
-          <div className="bg-[#1e293b] rounded-lg border border-[#334155] p-4">
-            <div className="text-gray-400 text-sm mb-1">In Progress</div>
-            <div className="text-2xl font-bold text-blue-500">
+          <div className="bg-[#1e293b] rounded-lg border border-[#334155] p-3 sm:p-4">
+            <div className="text-gray-400 text-xs sm:text-sm mb-1">In Progress</div>
+            <div className="text-xl sm:text-2xl font-bold text-blue-500">
               {statistics.byStatus?.find((s: any) => s.status === 'in-progress')?.count || 0}
             </div>
           </div>
-          <div className="bg-[#1e293b] rounded-lg border border-[#334155] p-4">
-            <div className="text-gray-400 text-sm mb-1">Completed</div>
-            <div className="text-2xl font-bold text-green-500">
+          <div className="bg-[#1e293b] rounded-lg border border-[#334155] p-3 sm:p-4">
+            <div className="text-gray-400 text-xs sm:text-sm mb-1">Completed</div>
+            <div className="text-xl sm:text-2xl font-bold text-green-500">
               {statistics.byStatus?.find((s: any) => s.status === 'completed')?.count || 0}
             </div>
           </div>
-          <div className="bg-[#1e293b] rounded-lg border border-[#334155] p-4">
-            <div className="text-gray-400 text-sm mb-1">Urgent</div>
-            <div className="text-2xl font-bold text-red-500">{urgentCount}</div>
+          <div className="bg-[#1e293b] rounded-lg border border-[#334155] p-3 sm:p-4">
+            <div className="text-gray-400 text-xs sm:text-sm mb-1">Urgent</div>
+            <div className="text-xl sm:text-2xl font-bold text-red-500">{urgentCount}</div>
           </div>
         </div>
       )}
 
       {/* Filters */}
-      <div className="bg-[#1e293b] rounded-lg border border-[#334155] p-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="relative">
+      <div className="bg-[#1e293b] rounded-lg border border-[#334155] p-3 sm:p-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="relative sm:col-span-2 md:col-span-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
               type="text"
               placeholder="Search by room, guest, service..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-[#0f172a] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+              className="w-full pl-10 pr-4 py-2.5 sm:py-2 text-sm sm:text-base bg-[#0f172a] border border-[#334155] rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
             />
           </div>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-4 py-2 bg-[#0f172a] border border-[#334155] rounded-lg text-white focus:outline-none focus:border-blue-500"
+            className="px-3 sm:px-4 py-2.5 sm:py-2 text-sm sm:text-base bg-[#0f172a] border border-[#334155] rounded-lg text-white focus:outline-none focus:border-blue-500"
           >
             <option value="">All Statuses</option>
             <option value="pending">Pending</option>
@@ -322,57 +322,57 @@ export default function RequestsPage() {
         </div>
       ) : (
         <div className="bg-[#1e293b] rounded-lg border border-[#334155] overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto responsive-table-wrapper">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#334155]">
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Room</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Guest</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Service/Type</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Priority</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Status</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Assigned To</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Created</th>
-                  <th className="text-left py-3 px-4 text-sm font-medium text-gray-400">Actions</th>
+                  <th className="text-left py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-xs sm:text-sm font-medium text-gray-400 whitespace-nowrap">Room</th>
+                  <th className="text-left py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-xs sm:text-sm font-medium text-gray-400 whitespace-nowrap">Guest</th>
+                  <th className="text-left py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-xs sm:text-sm font-medium text-gray-400 whitespace-nowrap">Service/Type</th>
+                  <th className="text-left py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-xs sm:text-sm font-medium text-gray-400 whitespace-nowrap">Priority</th>
+                  <th className="text-left py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-xs sm:text-sm font-medium text-gray-400 whitespace-nowrap">Status</th>
+                  <th className="text-left py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-xs sm:text-sm font-medium text-gray-400 whitespace-nowrap hidden md:table-cell">Assigned To</th>
+                  <th className="text-left py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-xs sm:text-sm font-medium text-gray-400 whitespace-nowrap hidden lg:table-cell">Created</th>
+                  <th className="text-left py-2 sm:py-3 px-2 sm:px-3 md:px-4 text-xs sm:text-sm font-medium text-gray-400 whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredRequests.map((req) => (
                   <tr key={req._id} className="border-b border-[#334155] hover:bg-[#0f172a]">
-                    <td className="py-3 px-4">
+                    <td className="py-2 sm:py-3 px-2 sm:px-3 md:px-4">
                       <div className="text-white font-medium">Room {req.roomId.roomNumber}</div>
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-2 sm:py-3 px-2 sm:px-3 md:px-4">
                       {req.guestId ? (
                         <div>
-                          <div className="text-white">{req.guestId.name}</div>
+                          <div className="text-white text-sm sm:text-base">{req.guestId.name}</div>
                           <div className="text-gray-400 text-xs">{req.guestId.phone}</div>
                         </div>
                       ) : (
                         <span className="text-gray-400">-</span>
                       )}
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-2 sm:py-3 px-2 sm:px-3 md:px-4">
                       {req.serviceId ? (
                         <div>
-                          <div className="text-white">{req.serviceId.name}</div>
+                          <div className="text-white text-sm sm:text-base">{req.serviceId.name}</div>
                           <div className="text-gray-400 text-xs">{req.serviceId.category}</div>
                         </div>
                       ) : (
                         <div>
-                          <div className="text-white capitalize">{req.requestType}</div>
+                          <div className="text-white capitalize text-sm sm:text-base">{req.requestType}</div>
                           {req.notes && (
                             <div className="text-gray-400 text-xs truncate max-w-xs">{req.notes}</div>
                           )}
                         </div>
                       )}
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-2 sm:py-3 px-2 sm:px-3 md:px-4">
                       <span className={`px-2 py-1 rounded text-xs text-white ${PRIORITY_COLORS[req.priority] || 'bg-gray-500'}`}>
                         {req.priority.toUpperCase()}
                       </span>
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-2 sm:py-3 px-2 sm:px-3 md:px-4">
                       <select
                         value={req.status}
                         onChange={(e) => handleStatusUpdate(req._id, e.target.value)}
@@ -384,14 +384,14 @@ export default function RequestsPage() {
                         <option value="cancelled">Cancelled</option>
                       </select>
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-2 sm:py-3 px-2 sm:px-3 md:px-4 hidden md:table-cell">
                       {req.assignedTo ? (
                         <div className="text-white text-sm">{req.assignedTo.name}</div>
                       ) : (
                         <span className="text-gray-400 text-sm">Unassigned</span>
                       )}
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-2 sm:py-3 px-2 sm:px-3 md:px-4 hidden lg:table-cell">
                       <div className="text-gray-300 text-sm">
                         {format(new Date(req.createdAt), 'MMM dd, yyyy')}
                       </div>
@@ -399,21 +399,21 @@ export default function RequestsPage() {
                         {format(new Date(req.createdAt), 'HH:mm')}
                       </div>
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-2 sm:py-3 px-2 sm:px-3 md:px-4">
                       <div className="flex items-center gap-2">
                         <a
                           href={`/requests/${req._id}/edit`}
-                          className="text-blue-400 hover:text-blue-300"
+                          className="text-blue-400 hover:text-blue-300 p-1"
                           title="Edit"
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit className="w-4 h-4 sm:w-5 sm:h-5" />
                         </a>
                         <button
                           onClick={() => handleDelete(req._id)}
-                          className="text-red-400 hover:text-red-300"
+                          className="text-red-400 hover:text-red-300 p-1"
                           title="Delete"
                         >
-                          <Trash2 className="w-4 h-4" />
+                          <Trash2 className="w-4 h-4 sm:w-5 sm:h-5" />
                         </button>
                       </div>
                     </td>
