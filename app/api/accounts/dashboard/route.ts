@@ -83,12 +83,11 @@ export async function GET(request: NextRequest) {
       { $sort: { total: -1 } },
     ]).catch(() => []);
 
-    // Get latest 10 transactions (both revenue and expense)
+    // Get latest 10 transactions (both revenue and expense) - minimal populate for speed
     const latestTransactions = await Transaction.find()
+      .select('type category amount date paymentMode description reference createdAt')
       .sort({ date: -1, createdAt: -1 })
       .limit(10)
-      .populate('bookingId', 'guestId roomId')
-      .populate('vendorId', 'name')
       .lean()
       .catch(() => []); // Return empty array if error
     
@@ -147,6 +146,10 @@ export async function GET(request: NextRequest) {
         description: t.description,
         reference: t.reference,
       })),
+    }, {
+      headers: {
+        'Cache-Control': 'no-store, must-revalidate',
+      },
     });
   } catch (error: any) {
     console.error('Dashboard error:', error);

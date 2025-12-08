@@ -53,6 +53,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // Start with null to avoid hydration mismatch - server and client must match
   const [user, setUser] = useState<{ name: string; email: string; _id?: string; profileImage?: string } | null>(null);
   const [mounted, setMounted] = useState(false);
+  const [hotelName, setHotelName] = useState<string>('Hotel Name');
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
@@ -100,6 +101,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     };
 
     fetchUser();
+
+    // Fetch hotel name from settings
+    const fetchHotelName = async () => {
+      try {
+        const response = await fetch('/api/settings', {
+          credentials: 'include',
+          cache: 'no-store',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.settings?.hotelName) {
+            setHotelName(data.settings.hotelName);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching hotel name:', error);
+      }
+    };
+
+    fetchHotelName();
     
     // Refresh user data when page becomes visible
     const handleVisibilityChange = () => {
@@ -248,7 +269,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             >
               <Menu className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
-            <h2 className="text-base sm:text-lg font-semibold text-white truncate">Hotel Name</h2>
+            <h2 className="text-sm sm:text-base md:text-lg font-semibold text-white truncate max-w-[120px] sm:max-w-[180px] md:max-w-none" title={hotelName}>
+              {hotelName}
+            </h2>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 md:gap-4">

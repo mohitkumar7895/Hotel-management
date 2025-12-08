@@ -25,14 +25,16 @@ export default function DashboardPage() {
   const [recentBookings, setRecentBookings] = useState<any[]>([]);
 
   useEffect(() => {
-    // Check authentication first
-    const checkAuth = async () => {
+    // Check authentication first, then fetch all data in parallel
+    const loadDashboardData = async () => {
       try {
-        const response = await fetch('/api/auth/me', {
+        // Check auth first
+        const authResponse = await fetch('/api/auth/me', {
           credentials: 'include',
+          cache: 'no-store',
         });
 
-        if (!response.ok) {
+        if (!authResponse.ok) {
           toast.error('Please login to continue');
           setTimeout(() => {
             window.location.href = '/login';
@@ -40,11 +42,8 @@ export default function DashboardPage() {
           return;
         }
 
-        const data = await response.json();
-        if (data.user) {
-          setUser(data.user);
-          setLoading(false); // Set loading to false once user is fetched
-        } else {
+        const authData = await authResponse.json();
+        if (!authData.user) {
           toast.error('User data not found');
           setTimeout(() => {
             window.location.href = '/login';
@@ -52,135 +51,175 @@ export default function DashboardPage() {
           return;
         }
 
-        // Fetch rooms data after authentication
-        fetch('/api/rooms', {
-          credentials: 'include',
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.rooms) {
-              const totalRooms = data.rooms.length;
-              const occupiedRooms = data.rooms.filter((r: any) => r.status === 'booked').length;
-              const availableRooms = data.rooms.filter((r: any) => r.status === 'available').length;
-              const cleaningRooms = data.rooms.filter((r: any) => r.status === 'cleaning').length;
+        setUser(authData.user);
+        setLoading(false); // Show dashboard immediately after auth
 
-              setStats((prev) => ({
-                ...prev,
-                totalRooms,
-                occupiedRooms,
-                availableRooms,
-                cleaningRooms,
-              }));
-            }
-          })
-          .catch((err) => {
-            console.error('Error fetching rooms:', err);
-          });
+        // Fetch all data in parallel for faster loading
+        const [roomsRes, bookingsRes, revenueRes] = await Promise.allSettled([
+          fetch('/api/rooms', {
+            credentials: 'include',
+            cache: 'no-store',
+          }),
+          fetch('/api/bookings', {
+            credentials: 'include',
+            cache: 'no-store',
+          }),
+          fetch('/api/accounts/dashboard', {
+            credentials: 'include',
+            cache: 'no-store',
+          }),
+        ]);
 
-        // Fetch bookings data after authentication
-        fetch('/api/bookings', {
-          credentials: 'include',
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.bookings) {
-              const today = new Date();
-              today.setHours(0, 0, 0, 0);
+        // Process rooms data
+        if (roomsRes.status === 'fulfilled' && roomsRes.value.ok) {
+          const roomsData = await roomsRes.value.json();
+          if (roomsData.rooms) {
+            const totalRooms = roomsData.rooms.length;
+            const occupiedRooms = roomsData.rooms.filter((r: any) => r.status === 'booked').length;
+            const availableRooms = roomsData.rooms.filter((r: any) => r.status === 'available').length;
+            const cleaningRooms = roomsData.rooms.filter((r: any) => r.status === 'cleaning').length;
 
-              const todaysCheckIns = data.bookings.filter((b: any) => {
-                const checkIn = new Date(b.checkIn);
-                checkIn.setHours(0, 0, 0, 0);
-                return checkIn.getTime() === today.getTime() && b.status !== 'cancelled';
-              }).length;
+            setStats((prev) => ({
+              ...prev,
+              totalRooms,
+              occupiedRooms,
+              availableRooms,
+              cleaningRooms,
+            }));
+          }
+        }
 
-              const todaysCheckOuts = data.bookings.filter((b: any) => {
-                const checkOut = new Date(b.checkOut);
-                checkOut.setHours(0, 0, 0, 0);
-                return checkOut.getTime() === today.getTime() && b.status !== 'cancelled';
-              }).length;
+        // Process bookings data
+        if (bookingsRes.status === 'fulfilled' && bookingsRes.value.ok) {
+          const bookingsData = await bookingsRes.value.json();
+          if (bookingsData.bookings) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
 
-              const currentMonth = new Date().getMonth();
-              const currentYear = new Date().getFullYear();
-              const monthlyRevenue = data.bookings
-                .filter((b: any) => {
-                  const bookingDate = new Date(b.createdAt);
-                  return (
-                    bookingDate.getMonth() === currentMonth &&
-                    bookingDate.getFullYear() === currentYear &&
-                    b.status !== 'cancelled'
-                  );
-                })
-                .reduce((sum: number, b: any) => sum + (b.totalAmount || 0), 0);
+            const todaysCheckIns = bookingsData.bookings.filter((b: any) => {
+              const checkIn = new Date(b.checkIn);
+              checkIn.setHours(0, 0, 0, 0);
+              return checkIn.getTime() === today.getTime() && b.status !== 'cancelled';
+            }).length;
 
-              setStats((prev) => ({
-                ...prev,
-                todaysCheckIns,
-                todaysCheckOuts,
-                monthlyRevenue,
-              }));
+            const todaysCheckOuts = bookingsData.bookings.filter((b: any) => {
+              const checkOut = new Date(b.checkOut);
+              checkOut.setHours(0, 0, 0, 0);
+              return checkOut.getTime() === today.getTime() && b.status !== 'cancelled';
+            }).length;
 
-              // Set recent bookings (last 5)
-              setRecentBookings(data.bookings.slice(0, 5));
-            }
-          })
-          .catch((err) => {
-            console.error('Error fetching bookings:', err);
-          });
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            const monthlyRevenue = bookingsData.bookings
+              .filter((b: any) => {
+                const bookingDate = new Date(b.createdAt);
+                return (
+                  bookingDate.getMonth() === currentMonth &&
+                  bookingDate.getFullYear() === currentYear &&
+                  b.status !== 'cancelled'
+                );
+              })
+              .reduce((sum: number, b: any) => sum + (b.totalAmount || 0), 0);
 
-        // Fetch live revenue data from accounts dashboard API
-        fetch('/api/accounts/dashboard', {
-          credentials: 'include',
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.summary) {
-              setStats((prev) => ({
-                ...prev,
-                revenueToday: data.summary.revenue.today || 0,
-                revenueThisMonth: data.summary.revenue.thisMonth || 0,
-                revenueThisYear: data.summary.revenue.thisYear || 0,
-              }));
-            }
-          })
-          .catch((err) => {
-            console.error('Error fetching revenue:', err);
-          });
+            setStats((prev) => ({
+              ...prev,
+              todaysCheckIns,
+              todaysCheckOuts,
+              monthlyRevenue,
+            }));
+
+            // Set recent bookings (last 5)
+            setRecentBookings(bookingsData.bookings.slice(0, 5));
+          }
+        }
+
+        // Process revenue data
+        if (revenueRes.status === 'fulfilled' && revenueRes.value.ok) {
+          const revenueData = await revenueRes.value.json();
+          if (revenueData.summary) {
+            setStats((prev) => ({
+              ...prev,
+              revenueToday: revenueData.summary.revenue.today || 0,
+              revenueThisMonth: revenueData.summary.revenue.thisMonth || 0,
+              revenueThisYear: revenueData.summary.revenue.thisYear || 0,
+            }));
+          }
+        }
       } catch (error) {
-        console.error('Auth check error:', error);
-        toast.error('Authentication failed');
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 500);
+        console.error('Dashboard load error:', error);
+        toast.error('Failed to load dashboard data');
+        setLoading(false);
       }
     };
 
-    checkAuth();
+    loadDashboardData();
 
-    // Auto-refresh revenue data every 60 seconds
-    const revenueInterval = setInterval(() => {
+    // Auto-refresh all dashboard data every 30 seconds (faster for live updates)
+    const refreshInterval = setInterval(() => {
       if (document.visibilityState === 'visible') {
-        fetch('/api/accounts/dashboard', {
-          credentials: 'include',
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.summary) {
-              setStats((prev) => ({
-                ...prev,
-                revenueToday: data.summary.revenue.today || 0,
-                revenueThisMonth: data.summary.revenue.thisMonth || 0,
-                revenueThisYear: data.summary.revenue.thisYear || 0,
-              }));
-            }
-          })
-          .catch((err) => {
-            console.error('Error refreshing revenue:', err);
-          });
+        // Refresh all data in parallel for faster updates
+        Promise.allSettled([
+          fetch('/api/rooms', { credentials: 'include', cache: 'no-store' })
+            .then((res) => res.ok ? res.json() : null)
+            .then((data) => {
+              if (data?.rooms) {
+                const totalRooms = data.rooms.length;
+                const occupiedRooms = data.rooms.filter((r: any) => r.status === 'booked').length;
+                const availableRooms = data.rooms.filter((r: any) => r.status === 'available').length;
+                const cleaningRooms = data.rooms.filter((r: any) => r.status === 'cleaning').length;
+                setStats((prev) => ({
+                  ...prev,
+                  totalRooms,
+                  occupiedRooms,
+                  availableRooms,
+                  cleaningRooms,
+                }));
+              }
+            }),
+          fetch('/api/bookings', { credentials: 'include', cache: 'no-store' })
+            .then((res) => res.ok ? res.json() : null)
+            .then((data) => {
+              if (data?.bookings) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const todaysCheckIns = data.bookings.filter((b: any) => {
+                  const checkIn = new Date(b.checkIn);
+                  checkIn.setHours(0, 0, 0, 0);
+                  return checkIn.getTime() === today.getTime() && b.status !== 'cancelled';
+                }).length;
+                const todaysCheckOuts = data.bookings.filter((b: any) => {
+                  const checkOut = new Date(b.checkOut);
+                  checkOut.setHours(0, 0, 0, 0);
+                  return checkOut.getTime() === today.getTime() && b.status !== 'cancelled';
+                }).length;
+                setStats((prev) => ({
+                  ...prev,
+                  todaysCheckIns,
+                  todaysCheckOuts,
+                }));
+                setRecentBookings(data.bookings.slice(0, 5));
+              }
+            }),
+          fetch('/api/accounts/dashboard', { credentials: 'include', cache: 'no-store' })
+            .then((res) => res.ok ? res.json() : null)
+            .then((data) => {
+              if (data?.summary) {
+                setStats((prev) => ({
+                  ...prev,
+                  revenueToday: data.summary.revenue.today || 0,
+                  revenueThisMonth: data.summary.revenue.thisMonth || 0,
+                  revenueThisYear: data.summary.revenue.thisYear || 0,
+                }));
+              }
+            }),
+        ]).catch((err) => {
+          console.error('Error refreshing dashboard:', err);
+        });
       }
-    }, 60000);
+    }, 30000); // Refresh every 30 seconds for faster live updates
 
     return () => {
-      clearInterval(revenueInterval);
+      clearInterval(refreshInterval);
     };
   }, [router]);
 
