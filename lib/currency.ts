@@ -16,3 +16,4 @@ export function formatCurrencyCompact(amount: number): string {
   }).format(amount);
 }
 
+

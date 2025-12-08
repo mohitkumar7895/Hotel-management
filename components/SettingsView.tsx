@@ -57,8 +57,12 @@ export default function SettingsView() {
   useEffect(() => {
     fetchSettings();
 
-    // Auto-refresh every 30 seconds for live updates
-    const interval = setInterval(fetchSettings, 30000);
+    // Auto-refresh every 60 seconds for live updates (reduced frequency for performance)
+    const interval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetchSettings();
+      }
+    }, 60000);
     
     // Refresh when page becomes visible
     const handleFocus = () => fetchSettings();

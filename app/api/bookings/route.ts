@@ -7,7 +7,9 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
+    // Only select needed fields for dashboard performance
     const bookings = await Booking.find()
+      .select('checkIn checkOut status totalAmount createdAt')
       .populate('guestId', 'name email phone')
       .populate('roomId', 'roomNumber')
       .sort({ createdAt: -1 })

@@ -53,9 +53,19 @@ const BookingSchema: Schema = new Schema(
   }
 );
 
+// Indexes for faster queries
+BookingSchema.index({ status: 1 });
+BookingSchema.index({ paymentStatus: 1 });
+BookingSchema.index({ guestId: 1 });
+BookingSchema.index({ roomId: 1 });
+BookingSchema.index({ checkIn: 1 });
+BookingSchema.index({ checkOut: 1 });
+BookingSchema.index({ createdAt: -1 });
+
 const Booking: Model<IBooking> = mongoose.models.Booking || mongoose.model<IBooking>('Booking', BookingSchema);
 
 export default Booking;
+
 
 
 

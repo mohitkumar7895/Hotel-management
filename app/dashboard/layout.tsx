@@ -50,11 +50,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  // Start with null to avoid hydration mismatch - server and client must match
   const [user, setUser] = useState<{ name: string; email: string; _id?: string; profileImage?: string } | null>(null);
+  const [mounted, setMounted] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   useEffect(() => {
+    // Mark as mounted to prevent hydration errors
+    setMounted(true);
+    
+    // Try to load from localStorage first for instant display
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('currentUser');
+      if (stored) {
+        try {
+          const parsedUser = JSON.parse(stored);
+          setUser(parsedUser);
+        } catch (e) {
+          // Invalid data, ignore
+        }
+      }
+    }
+
     // Fetch current user
     const fetchUser = async () => {
       try {
@@ -66,6 +84,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         if (response.ok) {
           const data = await response.json();
           setUser(data.user);
+          // Store in localStorage for fast access
+          if (data.user) {
+            localStorage.setItem('currentUser', JSON.stringify(data.user));
+          }
         } else {
           // Don't redirect from layout, let the page handle it
           // router.push('/login');
@@ -104,12 +126,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     window.addEventListener('profileImageUpdated', handleProfileUpdate);
     window.addEventListener('storage', handleStorageChange);
     
-    // Also poll for updates every 2 seconds when page is visible
-    const pollInterval = setInterval(() => {
-      if (document.visibilityState === 'visible') {
-        fetchUser();
-      }
-    }, 2000);
+    // Only poll if user is not loaded initially (max 3 attempts, then stop)
+    let pollAttempts = 0;
+    const maxPollAttempts = 3;
+    let pollInterval: NodeJS.Timeout | null = null;
+    
+    if (!user) {
+      pollInterval = setInterval(() => {
+        if (pollAttempts >= maxPollAttempts) {
+          if (pollInterval) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+          }
+          return;
+        }
+        if (document.visibilityState === 'visible') {
+          pollAttempts++;
+          fetchUser();
+        }
+      }, 10000);
+    }
     
     document.addEventListener('visibilitychange', handleVisibilityChange);
     
@@ -117,9 +153,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       document.removeEventListener('visibilitychange', handleVisibilityChange);
       window.removeEventListener('profileImageUpdated', handleProfileUpdate);
       window.removeEventListener('storage', handleStorageChange);
-      clearInterval(pollInterval);
+      if (pollInterval) clearInterval(pollInterval);
     };
-  }, [router]);
+  }, [pathname]);
 
   const handleLogout = async () => {
     try {
@@ -271,11 +307,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   />
                 ) : (
                   <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
-                    {user?.name?.[0]?.toUpperCase() || 'U'}
+                    {mounted && user ? (user.name && user.name.trim() ? user.name.trim()[0].toUpperCase() : (user.email ? user.email[0].toUpperCase() : 'U')) : 'U'}
                   </div>
                 )}
                 <span className="text-white font-medium hidden sm:block">
-                  {user?.name || 'User'}
+                  {mounted && user ? (user.name && user.name.trim() ? user.name.trim() : (user.email ? user.email.split('@')[0] : 'User')) : 'User'}
                 </span>
                 <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${userMenuOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -301,11 +337,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         />
                       ) : (
                         <div className="w-12 h-12 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-lg">
-                          {user?.name?.[0]?.toUpperCase() || 'U'}
+                          {mounted && user ? (user.name && user.name.trim() ? user.name.trim()[0].toUpperCase() : (user.email ? user.email[0].toUpperCase() : 'U')) : 'U'}
                         </div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="text-white font-semibold truncate">{user?.name || 'User'}</p>
+                        <p className="text-white font-semibold truncate">{mounted && user ? (user.name && user.name.trim() ? user.name.trim() : (user.email ? user.email.split('@')[0] : 'User')) : 'User'}</p>
                         <p className="text-gray-400 text-sm truncate">{user?.email || ''}</p>
                       </div>
                     </div>

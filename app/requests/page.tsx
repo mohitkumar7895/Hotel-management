@@ -92,10 +92,12 @@ export default function RequestsPage() {
   useEffect(() => {
     fetchRequests();
     
-    // Auto-refresh every 30 seconds for live data
+    // Auto-refresh every 60 seconds for live data (reduced frequency for performance)
     const interval = setInterval(() => {
-      fetchRequests();
-    }, 30000);
+      if (document.visibilityState === 'visible') {
+        fetchRequests();
+      }
+    }, 60000);
     
     // Refresh when page becomes visible
     const handleFocus = () => {

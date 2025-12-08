@@ -25,7 +25,8 @@ export async function GET(request: NextRequest) {
     }
 
     await connectDB();
-    const user = await User.findById(payload.userId).select('-password');
+    // Only select needed fields for faster queries
+    const user = await User.findById(payload.userId).select('name email role phone profileImage createdAt').lean();
 
     if (!user) {
       return NextResponse.json(
@@ -34,11 +35,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Ensure name is always a string (use email prefix if name is missing)
+    const displayName = user.name && user.name.trim() 
+      ? user.name.trim() 
+      : user.email.split('@')[0];
+
     return NextResponse.json({
       user: {
         _id: user._id.toString(),
         id: user._id.toString(),
-        name: user.name,
+        name: displayName,
         email: user.email,
         role: user.role,
         phone: user.phone,

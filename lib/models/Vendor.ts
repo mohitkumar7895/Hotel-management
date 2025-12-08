@@ -77,3 +77,4 @@ const Vendor: Model<IVendor> =
 
 export default Vendor;
 
+

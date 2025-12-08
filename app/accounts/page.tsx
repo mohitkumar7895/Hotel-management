@@ -86,12 +86,14 @@ export default function AccountsDashboard() {
     fetchPayments();
     fetchPendingInvoices();
     
-    // Auto-refresh every 30 seconds to show latest data
+    // Auto-refresh every 60 seconds to show latest data (reduced frequency for performance)
     const interval = setInterval(() => {
-      fetchDashboardData();
-      fetchPayments();
-      fetchPendingInvoices();
-    }, 30000);
+      if (document.visibilityState === 'visible') {
+        fetchDashboardData();
+        fetchPayments();
+        fetchPendingInvoices();
+      }
+    }, 60000);
     
     // Refresh when page becomes visible (after form submission)
     const handleFocus = () => {

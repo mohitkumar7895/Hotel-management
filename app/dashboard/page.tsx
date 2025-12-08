@@ -18,6 +18,9 @@ export default function DashboardPage() {
     todaysCheckIns: 0,
     todaysCheckOuts: 0,
     monthlyRevenue: 0,
+    revenueToday: 0,
+    revenueThisMonth: 0,
+    revenueThisYear: 0,
   });
   const [recentBookings, setRecentBookings] = useState<any[]>([]);
 
@@ -123,6 +126,25 @@ export default function DashboardPage() {
           .catch((err) => {
             console.error('Error fetching bookings:', err);
           });
+
+        // Fetch live revenue data from accounts dashboard API
+        fetch('/api/accounts/dashboard', {
+          credentials: 'include',
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.summary) {
+              setStats((prev) => ({
+                ...prev,
+                revenueToday: data.summary.revenue.today || 0,
+                revenueThisMonth: data.summary.revenue.thisMonth || 0,
+                revenueThisYear: data.summary.revenue.thisYear || 0,
+              }));
+            }
+          })
+          .catch((err) => {
+            console.error('Error fetching revenue:', err);
+          });
       } catch (error) {
         console.error('Auth check error:', error);
         toast.error('Authentication failed');
@@ -133,6 +155,33 @@ export default function DashboardPage() {
     };
 
     checkAuth();
+
+    // Auto-refresh revenue data every 60 seconds
+    const revenueInterval = setInterval(() => {
+      if (document.visibilityState === 'visible') {
+        fetch('/api/accounts/dashboard', {
+          credentials: 'include',
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.summary) {
+              setStats((prev) => ({
+                ...prev,
+                revenueToday: data.summary.revenue.today || 0,
+                revenueThisMonth: data.summary.revenue.thisMonth || 0,
+                revenueThisYear: data.summary.revenue.thisYear || 0,
+              }));
+            }
+          })
+          .catch((err) => {
+            console.error('Error refreshing revenue:', err);
+          });
+      }
+    }, 60000);
+
+    return () => {
+      clearInterval(revenueInterval);
+    };
   }, [router]);
 
   // Show loading while checking authentication
@@ -183,10 +232,22 @@ export default function DashboardPage() {
       color: 'bg-indigo-600',
     },
     {
+      title: 'Revenue Today',
+      value: `$${stats.revenueToday.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      icon: <DollarSign className="w-6 h-6" />,
+      color: 'bg-green-600',
+    },
+    {
       title: 'Revenue This Month',
-      value: `$${stats.monthlyRevenue.toLocaleString()}`,
+      value: `$${stats.revenueThisMonth.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
       icon: <DollarSign className="w-6 h-6" />,
       color: 'bg-emerald-600',
+    },
+    {
+      title: 'Revenue This Year',
+      value: `$${stats.revenueThisYear.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+      icon: <DollarSign className="w-6 h-6" />,
+      color: 'bg-teal-600',
     },
   ];
 

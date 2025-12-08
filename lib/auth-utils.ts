@@ -53,3 +53,4 @@ export function canView(userRole: string): boolean {
   return ['admin', 'accountant', 'manager'].includes(userRole);
 }
 
+

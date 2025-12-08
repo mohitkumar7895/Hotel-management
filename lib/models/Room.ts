@@ -38,9 +38,15 @@ const RoomSchema: Schema = new Schema(
   }
 );
 
+// Indexes for faster queries
+RoomSchema.index({ status: 1 });
+RoomSchema.index({ roomTypeId: 1 });
+RoomSchema.index({ roomNumber: 1 });
+
 const Room: Model<IRoom> = mongoose.models.Room || mongoose.model<IRoom>('Room', RoomSchema);
 
 export default Room;
+
 
 
 
