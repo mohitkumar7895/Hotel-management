@@ -1,23 +1,51 @@
 'use server';
 
 import { z } from 'zod';
+import { cookies } from 'next/headers';
 import connectDB from '@/lib/mongodb';
 import User from '@/lib/models/User';
-// Authentication removed
 import { hashPassword } from '@/lib/auth';
+import { verifyToken } from '@/lib/jwt';
 import { revalidatePath } from 'next/cache';
 
 const userSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  role: z.enum(['admin', 'staff']).default('staff'),
+  role: z.enum(['admin', 'staff', 'accountant', 'manager']).default('staff'),
   phone: z.string().optional(),
 });
 
+async function checkSuperadmin() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('hotel-token')?.value;
+  
+  if (!token) {
+    return { error: 'Not authenticated' };
+  }
+
+  const payload = verifyToken(token);
+  if (!payload) {
+    return { error: 'Invalid token' };
+  }
+
+  await connectDB();
+  const user = await User.findById(payload.userId).lean();
+  
+  if (!user || user.email !== 'superadmin@gmail.com') {
+    return { error: 'Only superadmin can perform this action' };
+  }
+
+  return { success: true };
+}
+
 export async function createUser(formData: FormData) {
   try {
-    // Authentication removed
+    // Check if user is superadmin
+    const authCheck = await checkSuperadmin();
+    if (authCheck.error) {
+      return { error: authCheck.error };
+    }
 
     const rawData = {
       name: formData.get('name') as string,
@@ -26,6 +54,11 @@ export async function createUser(formData: FormData) {
       role: (formData.get('role') as string) || 'staff',
       phone: formData.get('phone') as string,
     };
+
+    // Prevent creating superadmin
+    if (rawData.email.toLowerCase() === 'superadmin@gmail.com' || rawData.role === 'superadmin') {
+      return { error: 'Cannot create superadmin account' };
+    }
 
     const validatedData = userSchema.parse(rawData);
 
@@ -57,9 +90,20 @@ export async function createUser(formData: FormData) {
 
 export async function deleteUser(id: string) {
   try {
-    // Authentication removed
+    // Check if user is superadmin
+    const authCheck = await checkSuperadmin();
+    if (authCheck.error) {
+      return { error: authCheck.error };
+    }
 
     await connectDB();
+    
+    // Prevent deleting superadmin
+    const userToDelete = await User.findById(id);
+    if (userToDelete && userToDelete.email === 'superadmin@gmail.com') {
+      return { error: 'Cannot delete superadmin account' };
+    }
+
     await User.findByIdAndDelete(id);
 
     revalidatePath('/users');

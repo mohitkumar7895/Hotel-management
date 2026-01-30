@@ -17,3 +17,40 @@ export async function GET(request: NextRequest) {
   }
 }
 
+export async function POST(request: NextRequest) {
+  try {
+    await connectDB();
+    const body = await request.json();
+    const { name, email, phone, address, idProof } = body;
+
+    if (!name || !email || !phone || !address || !idProof) {
+      return NextResponse.json(
+        { error: 'All fields are required' },
+        { status: 400 }
+      );
+    }
+
+    const guest = await Guest.create({
+      name,
+      email: email.toLowerCase(),
+      phone,
+      address,
+      idProof,
+    });
+
+    return NextResponse.json({ guest }, { status: 201 });
+  } catch (error: any) {
+    console.error('Create guest error:', error);
+    if (error.code === 11000) {
+      return NextResponse.json(
+        { error: 'Guest with this email already exists' },
+        { status: 400 }
+      );
+    }
+    return NextResponse.json(
+      { error: error.message || 'Failed to create guest' },
+      { status: 500 }
+    );
+  }
+}
+

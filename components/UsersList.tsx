@@ -65,8 +65,14 @@ export default function UsersList({ users }: { users: User[] }) {
                 <td className="py-3 px-4">
                   <span
                     className={`px-2 py-1 rounded text-xs font-medium ${
-                      user.role === 'admin'
+                      user.role === 'superadmin'
+                        ? 'bg-red-500/20 text-red-400'
+                        : user.role === 'admin'
                         ? 'bg-purple-500/20 text-purple-400'
+                        : user.role === 'accountant'
+                        ? 'bg-green-500/20 text-green-400'
+                        : user.role === 'manager'
+                        ? 'bg-yellow-500/20 text-yellow-400'
                         : 'bg-blue-500/20 text-blue-400'
                     }`}
                   >
@@ -74,13 +80,19 @@ export default function UsersList({ users }: { users: User[] }) {
                   </span>
                 </td>
                 <td className="py-3 px-4">
-                  <button
-                    onClick={() => handleDelete(user._id)}
-                    disabled={deleting === user._id}
-                    className="text-red-400 hover:text-red-300 disabled:opacity-50"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {user.email !== 'superadmin@gmail.com' && (
+                    <button
+                      onClick={() => handleDelete(user._id)}
+                      disabled={deleting === user._id}
+                      className="text-red-400 hover:text-red-300 disabled:opacity-50"
+                      title="Delete user"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                  {user.email === 'superadmin@gmail.com' && (
+                    <span className="text-gray-500 text-xs">Protected</span>
+                  )}
                 </td>
               </tr>
             ))}

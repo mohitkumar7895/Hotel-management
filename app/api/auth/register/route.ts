@@ -9,12 +9,12 @@ export const dynamic = 'force-dynamic';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password, role } = body;
+    const { name, email, password, role } = body;
 
     // Validation
-    if (!email || !password) {
+    if (!name || !email || !password) {
       return NextResponse.json(
-        { error: 'Email and password are required' },
+        { error: 'Name, email and password are required' },
         { status: 400 }
       );
     }
@@ -29,6 +29,14 @@ export async function POST(request: NextRequest) {
     // Connect to database
     await connectDB();
 
+    // Prevent creating superadmin via registration
+    if (role === 'superadmin' || email.toLowerCase() === 'superadmin@gmail.com') {
+      return NextResponse.json(
+        { error: 'Cannot create superadmin account via registration' },
+        { status: 400 }
+      );
+    }
+
     // Check if user already exists
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
@@ -41,11 +49,13 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Create user
+    // Create user (ensure role is not superadmin)
+    const userRole = role && role !== 'superadmin' ? role : 'staff';
     const user = await User.create({
+      name: name.trim(),
       email: email.toLowerCase(),
       password: hashedPassword,
-      role: role || 'staff',
+      role: userRole,
     });
 
     // Generate JWT token
@@ -62,6 +72,7 @@ export async function POST(request: NextRequest) {
         message: 'User registered successfully',
         user: {
           id: user._id.toString(),
+          name: user.name,
           email: user.email,
           role: user.role,
         },

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import User from '@/lib/models/User';
+import Guest from '@/lib/models/Guest';
 import { verifyPassword } from '@/lib/auth';
 import { signJwt } from '@/lib/jwt';
 
@@ -40,6 +41,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if user is a public registered user (exists in Guest table)
+    // Public users are those who registered themselves, not created by superadmin
+    const guestExists = await Guest.findOne({ email: user.email.toLowerCase() });
+    const isPublicUser = !!guestExists && (user.role === 'staff' || !user.role);
+
     // Generate JWT token
     const token = signJwt({
       userId: user._id.toString(),
@@ -58,6 +64,7 @@ export async function POST(request: NextRequest) {
           name: user.name,
           email: user.email,
           role: user.role,
+          isPublicUser: isPublicUser, // Flag to identify public registered users
         },
       },
       { status: 200 }

@@ -18,8 +18,7 @@ export async function GET(
 
     return NextResponse.json({ roomType });
   } catch (error) {
+    console.error('Room type API error:', error);
     return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
-
-

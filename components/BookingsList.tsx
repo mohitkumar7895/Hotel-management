@@ -15,7 +15,7 @@ interface Booking {
   };
   roomId: {
     roomNumber: string;
-  };
+  } | null;
   checkIn: Date;
   checkOut: Date;
   totalAmount: number;
@@ -96,7 +96,7 @@ export default function BookingsList({ bookings }: { bookings: Booking[] }) {
                     <p className="text-gray-400 text-xs">{booking.guestId.email}</p>
                   </div>
                 </td>
-                <td className="py-3 px-4 text-white">{booking.roomId.roomNumber}</td>
+                <td className="py-3 px-4 text-white">{booking.roomId?.roomNumber || 'N/A'}</td>
                 <td className="py-3 px-4 text-gray-300">
                   {format(new Date(booking.checkIn), 'MMM dd, yyyy')}
                 </td>
@@ -149,6 +149,9 @@ export default function BookingsList({ bookings }: { bookings: Booking[] }) {
     </div>
   );
 }
+
+
+
 
 
 

@@ -1,12 +1,20 @@
 import connectDB from '@/lib/mongodb';
 import Booking from '@/lib/models/Booking';
+import Guest from '@/lib/models/Guest';
+import Room from '@/lib/models/Room';
 import BookingsList from '@/components/BookingsList';
+import mongoose from 'mongoose';
 
 export const dynamic = 'force-dynamic';
 
 export default async function BookingsPage() {
-
   await connectDB();
+  
+  // Ensure models are registered after connection
+  // Import models dynamically to ensure they register after DB connection
+  await import('@/lib/models/Guest');
+  await import('@/lib/models/Room');
+  
   const bookings = await Booking.find()
     .populate('guestId', 'name email phone')
     .populate('roomId', 'roomNumber')

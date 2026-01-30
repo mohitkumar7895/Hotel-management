@@ -51,6 +51,7 @@ export default function DashboardPage() {
           return;
         }
 
+        // Allow all authenticated users to access dashboard
         setUser(authData.user);
         setLoading(false); // Show dashboard immediately after auth
 

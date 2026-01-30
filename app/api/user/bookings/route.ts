@@ -1,0 +1,54 @@
+import { NextRequest, NextResponse } from 'next/server';
+import connectDB from '@/lib/mongodb';
+import Booking from '@/lib/models/Booking';
+import Guest from '@/lib/models/Guest';
+import { verifyToken } from '@/lib/jwt';
+
+export const dynamic = 'force-dynamic';
+
+export async function GET(request: NextRequest) {
+  try {
+    // Check authentication
+    const token = request.cookies.get('hotel-token')?.value;
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const payload = verifyToken(token);
+    if (!payload) {
+      return NextResponse.json(
+        { error: 'Invalid token' },
+        { status: 401 }
+      );
+    }
+
+    await connectDB();
+
+    // Get user email from token
+    const userEmail = payload.email;
+
+    // Find guest by email
+    const guest = await Guest.findOne({ email: userEmail.toLowerCase() });
+    if (!guest) {
+      return NextResponse.json({ bookings: [] });
+    }
+
+    // Find all bookings for this guest
+    const bookings = await Booking.find({ guestId: guest._id })
+      .populate('roomId', 'roomNumber')
+      .populate('roomId.roomTypeId', 'name price')
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return NextResponse.json({ bookings });
+  } catch (error: any) {
+    console.error('User bookings error:', error);
+    return NextResponse.json(
+      { error: error.message || 'Failed to fetch bookings' },
+      { status: 500 }
+    );
+  }
+}

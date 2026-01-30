@@ -24,6 +24,7 @@ import {
   Edit,
   ChevronDown,
   Building2,
+  Calendar,
 } from 'lucide-react';
 
 interface MenuItem {
@@ -35,6 +36,7 @@ interface MenuItem {
 
 const menuItems: MenuItem[] = [
   { name: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" />, href: '/dashboard' },
+  { name: 'My Bookings', icon: <Calendar className="w-5 h-5" />, href: '/my-bookings' },
   { name: 'Guests', icon: <Users className="w-5 h-5" />, href: '/guests' },
   { name: 'Room Type', icon: <Bed className="w-5 h-5" />, href: '/room-types' },
   { name: 'Rooms', icon: <DoorOpen className="w-5 h-5" />, href: '/rooms' },

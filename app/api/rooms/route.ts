@@ -7,9 +7,22 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: NextRequest) {
   try {
     await connectDB();
+    const { searchParams } = new URL(request.url);
+    const roomTypeId = searchParams.get('roomTypeId');
+    const status = searchParams.get('status');
+
+    let query: any = {};
+    if (roomTypeId) {
+      query.roomTypeId = roomTypeId;
+    }
+    if (status) {
+      query.status = status;
+    }
+
     // Only select needed fields for dashboard performance - no populate needed for status counts
-    const rooms = await Room.find()
-      .select('roomNumber status')
+    const rooms = await Room.find(query)
+      .populate('roomTypeId', 'name price')
+      .select('roomNumber status roomTypeId')
       .sort({ roomNumber: 1 })
       .lean();
     

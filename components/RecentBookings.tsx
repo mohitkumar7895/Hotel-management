@@ -8,10 +8,10 @@ interface Booking {
     name: string;
     email: string;
     phone: string;
-  };
+  } | null;
   roomId: {
     roomNumber: string;
-  };
+  } | null;
   checkIn: Date;
   checkOut: Date;
   totalAmount: number;
@@ -69,22 +69,24 @@ export default function RecentBookings({ bookings }: { bookings: Booking[] }) {
                 <tr key={booking._id} className="border-b border-[#334155] hover:bg-[#0f172a]">
                   <td className="py-3 px-4">
                     <div>
-                      <p className="text-white font-medium">{booking.guestId.name}</p>
-                      <p className="text-gray-400 text-sm">{booking.guestId.email}</p>
+                      <p className="text-white font-medium">{booking.guestId?.name || 'N/A'}</p>
+                      <p className="text-gray-400 text-sm">{booking.guestId?.email || 'N/A'}</p>
                     </div>
                   </td>
-                  <td className="py-3 px-4 text-white">{booking.roomId.roomNumber}</td>
+                  <td className="py-3 px-4 text-white">
+                    {booking.roomId?.roomNumber || 'Room Deleted'}
+                  </td>
                   <td className="py-3 px-4 text-gray-300">
                     {format(new Date(booking.checkIn), 'MMM dd, yyyy')}
                   </td>
-                  <td className="py-3 px-4 text-white">${booking.totalAmount.toLocaleString()}</td>
+                  <td className="py-3 px-4 text-white">${booking.totalAmount?.toLocaleString() || '0'}</td>
                   <td className="py-3 px-4">
                     <span
                       className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(
                         booking.status
                       )}`}
                     >
-                      {booking.status}
+                      {booking.status || 'pending'}
                     </span>
                   </td>
                 </tr>
@@ -96,6 +98,8 @@ export default function RecentBookings({ bookings }: { bookings: Booking[] }) {
     </div>
   );
 }
+
+
 
 
 
