@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyToken } from '@/lib/jwt';
 import connectDB from '@/lib/mongodb';
 import User from '@/lib/models/User';
+import { UserRole } from '@/lib/middleware/auth';
 
 export interface AuthUser {
   userId: string;
   email: string;
-  role: 'admin' | 'staff' | 'accountant' | 'manager';
+  role: UserRole;
 }
 
 export async function authenticateRequest(
@@ -33,23 +34,27 @@ export async function authenticateRequest(
     user: {
       userId: user._id.toString(),
       email: user.email,
-      role: user.role as 'admin' | 'staff' | 'accountant' | 'manager',
+      role: user.role as UserRole,
     },
   };
 }
 
 export function checkRole(
   userRole: string,
-  allowedRoles: ('admin' | 'staff' | 'accountant' | 'manager')[]
+  allowedRoles: UserRole[]
 ): boolean {
-  return allowedRoles.includes(userRole as any);
+  // Super Admin bypasses all checks
+  if (userRole === 'superadmin') return true;
+  return allowedRoles.includes(userRole as UserRole);
 }
 
 export function canEdit(userRole: string): boolean {
+  if (userRole === 'superadmin') return true;
   return ['admin', 'accountant'].includes(userRole);
 }
 
 export function canView(userRole: string): boolean {
+  if (userRole === 'superadmin') return true;
   return ['admin', 'accountant', 'manager'].includes(userRole);
 }
 

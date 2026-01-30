@@ -2,11 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Booking from '@/lib/models/Booking';
 import Room from '@/lib/models/Room';
+import { authorizeRoles } from '@/lib/middleware/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
+    // Allow: superadmin, admin, manager, accountant (view bookings)
+    const authResult = await authorizeRoles('superadmin', 'admin', 'manager', 'accountant')(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     await connectDB();
     // Only select needed fields for dashboard performance - minimal populate
     const bookings = await Booking.find()
@@ -38,6 +45,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Allow: superadmin, admin, manager (create bookings)
+    const authResult = await authorizeRoles('superadmin', 'admin', 'manager')(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     await connectDB();
     const body = await request.json();
     const { guestId, roomId, checkIn, checkOut, totalAmount, status, paymentStatus } = body;

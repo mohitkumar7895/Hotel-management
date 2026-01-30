@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Transaction from '@/lib/models/Transaction';
-import { authenticateRequest, canView } from '@/lib/auth-utils';
+import { authorizeRoles } from '@/lib/middleware/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    // Skip authentication check - allow access without auth
+    // Allow: superadmin, admin, accountant (financial data)
+    const authResult = await authorizeRoles('superadmin', 'admin', 'accountant')(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     await connectDB();
 
     const now = new Date();

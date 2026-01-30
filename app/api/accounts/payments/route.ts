@@ -5,12 +5,19 @@ import Invoice from '@/lib/models/Invoice';
 import Transaction from '@/lib/models/Transaction';
 import User from '@/lib/models/User';
 import mongoose from 'mongoose';
+import { authorizeRoles } from '@/lib/middleware/auth';
 
 export const dynamic = 'force-dynamic';
 
 // Get all payments with filters
 export async function GET(request: NextRequest) {
   try {
+    // Allow: superadmin, admin, accountant (view payments)
+    const authResult = await authorizeRoles('superadmin', 'admin', 'accountant')(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     await connectDB();
 
     const { searchParams } = new URL(request.url);
@@ -100,6 +107,12 @@ export async function GET(request: NextRequest) {
 // Create a new payment (quick payment recording)
 export async function POST(request: NextRequest) {
   try {
+    // Allow: superadmin, admin, accountant (create payments)
+    const authResult = await authorizeRoles('superadmin', 'admin', 'accountant')(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     // Connect to MongoDB Atlas (not localhost)
     await connectDB();
     

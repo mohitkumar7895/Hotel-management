@@ -51,7 +51,31 @@ export default function DashboardPage() {
           return;
         }
 
-        // Allow all authenticated users to access dashboard
+        const userRole = authData.user.role;
+        const userEmail = authData.user.email;
+
+        // Redirect to role-specific dashboard
+        if (userRole === 'superadmin' || userEmail === 'superadmin@gmail.com') {
+          router.push('/dashboard/super-admin');
+          return;
+        } else if (userRole === 'admin') {
+          router.push('/dashboard/admin');
+          return;
+        } else if (userRole === 'manager') {
+          router.push('/dashboard/manager');
+          return;
+        } else if (userRole === 'accountant') {
+          router.push('/dashboard/accountant');
+          return;
+        } else if (userRole === 'staff') {
+          router.push('/dashboard/staff');
+          return;
+        } else if (userRole === 'USER') {
+          router.push('/my-bookings');
+          return;
+        }
+
+        // Fallback: Allow access to main dashboard for backward compatibility
         setUser(authData.user);
         setLoading(false); // Show dashboard immediately after auth
 

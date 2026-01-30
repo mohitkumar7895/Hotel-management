@@ -55,7 +55,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   // Start with null to avoid hydration mismatch - server and client must match
-  const [user, setUser] = useState<{ name: string; email: string; _id?: string; profileImage?: string } | null>(null);
+  const [user, setUser] = useState<{ name: string; email: string; _id?: string; profileImage?: string; role?: string } | null>(null);
   const [mounted, setMounted] = useState(false);
   const [hotelName, setHotelName] = useState<string>('Hotel Name');
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -233,32 +233,45 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <nav className="flex-1 overflow-y-auto py-2 sm:py-4">
           <ul className="space-y-1 px-1 sm:px-2">
-            {menuItems.map((item) => {
-              const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
-              return (
-                <li key={item.name}>
-                  <Link
-                    href={item.href}
-                    className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 rounded-lg transition-colors text-sm sm:text-base ${
-                      isActive
-                        ? 'bg-[#3b82f6] text-white'
-                        : 'text-gray-300 hover:bg-[#334155] hover:text-white'
-                    }`}
-                    onClick={() => setMobileMenuOpen(false)}
-                  >
-                    <span className="flex-shrink-0">{item.icon}</span>
-                    {sidebarOpen && (
-                      <>
-                        <span className="flex-1 truncate">{item.name}</span>
-                        {item.hasSubmenu && (
-                          <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                        )}
-                      </>
-                    )}
-                  </Link>
-                </li>
-              );
-            })}
+            {menuItems
+              .filter((item) => {
+                // Only show "My Bookings" for USER role
+                if (item.name === 'My Bookings') {
+                  return user?.role === 'USER';
+                }
+                // Only show "Users" for superadmin
+                if (item.name === 'Users') {
+                  return user?.role === 'superadmin' || user?.email === 'superadmin@gmail.com';
+                }
+                // Hide "My Bookings" for admin, accountant, manager, staff, superadmin
+                return true;
+              })
+              .map((item) => {
+                const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                return (
+                  <li key={item.name}>
+                    <Link
+                      href={item.href}
+                      className={`flex items-center gap-2 sm:gap-3 px-2 sm:px-3 md:px-4 py-2 sm:py-2.5 md:py-3 rounded-lg transition-colors text-sm sm:text-base ${
+                        isActive
+                          ? 'bg-[#3b82f6] text-white'
+                          : 'text-gray-300 hover:bg-[#334155] hover:text-white'
+                      }`}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <span className="flex-shrink-0">{item.icon}</span>
+                      {sidebarOpen && (
+                        <>
+                          <span className="flex-1 truncate">{item.name}</span>
+                          {item.hasSubmenu && (
+                            <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                          )}
+                        </>
+                      )}
+                    </Link>
+                  </li>
+                );
+              })}
           </ul>
         </nav>
       </aside>

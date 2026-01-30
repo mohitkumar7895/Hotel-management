@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Transaction from '@/lib/models/Transaction';
 import User from '@/lib/models/User';
-import { authenticateRequest, canView, canEdit } from '@/lib/auth-utils';
+import { authorizeRoles } from '@/lib/middleware/auth';
 import { logAudit } from '@/lib/audit-log';
 import mongoose from 'mongoose';
 
@@ -10,7 +10,12 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    // Skip authentication check - allow access without auth
+    // Allow: superadmin, admin, accountant (view revenue)
+    const authResult = await authorizeRoles('superadmin', 'admin', 'accountant')(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     await connectDB();
 
     const { searchParams } = new URL(request.url);
@@ -68,9 +73,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Allow: superadmin, admin, accountant (create revenue)
+    const authResult = await authorizeRoles('superadmin', 'admin', 'accountant')(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     await connectDB();
     
-    // Get any user for createdBy field (skip authentication for now)
+    // Get any user for createdBy field
     let userId = null;
     const anyUser = await User.findOne();
     if (anyUser) {

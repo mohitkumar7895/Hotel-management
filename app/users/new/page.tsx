@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createUser } from '@/app/actions/users';
 import toast from 'react-hot-toast';
@@ -10,6 +10,7 @@ import Link from 'next/link';
 export default function NewUserPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -17,6 +18,67 @@ export default function NewUserPage() {
     role: 'staff',
     phone: '',
   });
+
+  useEffect(() => {
+    // Check if user is superadmin
+    const checkAuth = async () => {
+      try {
+        const response = await fetch('/api/auth/me', {
+          credentials: 'include',
+          cache: 'no-store',
+        });
+
+        if (!response.ok) {
+          toast.error('Please login to continue');
+          router.push('/login');
+          return;
+        }
+
+        const data = await response.json();
+        if (!data.user) {
+          toast.error('User data not found');
+          router.push('/login');
+          return;
+        }
+
+        // Only superadmin can access this page
+        if (data.user.role !== 'superadmin' && data.user.email !== 'superadmin@gmail.com') {
+          toast.error('Access denied. Super Admin only.');
+          // Redirect based on role
+          if (data.user.role === 'admin') {
+            router.push('/dashboard/admin');
+          } else if (data.user.role === 'manager') {
+            router.push('/dashboard/manager');
+          } else if (data.user.role === 'accountant') {
+            router.push('/dashboard/accountant');
+          } else if (data.user.role === 'staff') {
+            router.push('/dashboard/staff');
+          } else if (data.user.role === 'USER') {
+            router.push('/my-bookings');
+          } else {
+            router.push('/dashboard');
+          }
+          return;
+        }
+
+        setCheckingAuth(false);
+      } catch (error) {
+        console.error('Auth check error:', error);
+        toast.error('Failed to verify access');
+        router.push('/login');
+      }
+    };
+
+    checkAuth();
+  }, [router]);
+
+  if (checkingAuth) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-gray-400">Checking access...</p>
+      </div>
+    );
+  }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({

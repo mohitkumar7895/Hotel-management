@@ -49,8 +49,8 @@ export async function POST(request: NextRequest) {
     // Hash password
     const hashedPassword = await hashPassword(password);
 
-    // Create user (ensure role is not superadmin)
-    const userRole = role && role !== 'superadmin' ? role : 'staff';
+    // Create user (ensure role is not superadmin, default to USER for public registration)
+    const userRole = role && role !== 'superadmin' ? role : 'USER';
     const user = await User.create({
       name: name.trim(),
       email: email.toLowerCase(),

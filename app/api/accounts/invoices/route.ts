@@ -72,6 +72,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    // Allow: superadmin, admin, accountant (create invoices)
+    const authResult = await authorizeRoles('superadmin', 'admin', 'accountant')(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
     // Skip authentication check
     await connectDB();
     

@@ -25,7 +25,20 @@ export default async function UsersPage() {
   const currentUser = await User.findById(payload.userId).lean();
 
   if (!currentUser || (currentUser.role !== 'superadmin' && currentUser.email !== 'superadmin@gmail.com')) {
-    redirect('/dashboard');
+    // Redirect non-superadmin to their role-specific dashboard
+    if (currentUser?.role === 'admin') {
+      redirect('/dashboard/admin');
+    } else if (currentUser?.role === 'manager') {
+      redirect('/dashboard/manager');
+    } else if (currentUser?.role === 'accountant') {
+      redirect('/dashboard/accountant');
+    } else if (currentUser?.role === 'staff') {
+      redirect('/dashboard/staff');
+    } else if (currentUser?.role === 'USER') {
+      redirect('/my-bookings');
+    } else {
+      redirect('/dashboard');
+    }
   }
 
   const users = await User.find().select('-password').sort({ createdAt: -1 }).lean();

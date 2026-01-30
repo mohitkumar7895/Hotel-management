@@ -1,11 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/mongodb';
 import Room from '@/lib/models/Room';
+import { authorizeRoles } from '@/lib/middleware/auth';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
+    // Allow: superadmin, admin, manager, staff, accountant (view only)
+    const authResult = await authorizeRoles('superadmin', 'admin', 'manager', 'staff', 'accountant', 'USER')(request);
+    if (authResult instanceof NextResponse) {
+      return authResult;
+    }
+
     await connectDB();
     const { searchParams } = new URL(request.url);
     const roomTypeId = searchParams.get('roomTypeId');

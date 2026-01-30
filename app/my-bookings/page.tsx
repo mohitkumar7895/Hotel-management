@@ -61,6 +61,26 @@ export default function MyBookingsPage() {
       const userData = await userResponse.json();
       setUser(userData.user);
 
+      // Only USER role can access my-bookings
+      if (userData.user.role && userData.user.role !== 'USER') {
+        toast.error('Access denied. This page is for regular users only.');
+        // Redirect based on role
+        if (userData.user.role === 'superadmin' || userData.user.email === 'superadmin@gmail.com') {
+          router.push('/dashboard/super-admin');
+        } else if (userData.user.role === 'admin') {
+          router.push('/dashboard/admin');
+        } else if (userData.user.role === 'manager') {
+          router.push('/dashboard/manager');
+        } else if (userData.user.role === 'accountant') {
+          router.push('/dashboard/accountant');
+        } else if (userData.user.role === 'staff') {
+          router.push('/dashboard/staff');
+        } else {
+          router.push('/dashboard');
+        }
+        return;
+      }
+
       // Fetch bookings
       const bookingsResponse = await fetch('/api/user/bookings', {
         credentials: 'include',

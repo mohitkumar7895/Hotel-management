@@ -37,7 +37,82 @@ export async function middleware(request: NextRequest) {
     if (!token) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
-    // Don't verify here - let the page verify to avoid timing issues
+    
+    // Basic role-based route protection
+    if (token) {
+      try {
+        const payload = verifyToken(token);
+        if (payload) {
+          const userRole = payload.role;
+          const userEmail = payload.email;
+          
+          // Protect /my-bookings - only USER role can access
+          if (path.startsWith('/my-bookings')) {
+            if (userRole !== 'USER') {
+              // Redirect staff roles to their dashboard
+              if (userRole === 'superadmin' || userEmail === 'superadmin@gmail.com') {
+                return NextResponse.redirect(new URL('/dashboard/super-admin', request.url));
+              } else if (userRole === 'admin') {
+                return NextResponse.redirect(new URL('/dashboard/admin', request.url));
+              } else if (userRole === 'manager') {
+                return NextResponse.redirect(new URL('/dashboard/manager', request.url));
+              } else if (userRole === 'accountant') {
+                return NextResponse.redirect(new URL('/dashboard/accountant', request.url));
+              } else if (userRole === 'staff') {
+                return NextResponse.redirect(new URL('/dashboard/staff', request.url));
+              } else {
+                return NextResponse.redirect(new URL('/dashboard', request.url));
+              }
+            }
+          }
+          
+          // Protect /users - only superadmin can access
+          if (path.startsWith('/users')) {
+            if (userRole !== 'superadmin' && userEmail !== 'superadmin@gmail.com') {
+              // Redirect non-superadmin to their dashboard
+              if (userRole === 'admin') {
+                return NextResponse.redirect(new URL('/dashboard/admin', request.url));
+              } else if (userRole === 'manager') {
+                return NextResponse.redirect(new URL('/dashboard/manager', request.url));
+              } else if (userRole === 'accountant') {
+                return NextResponse.redirect(new URL('/dashboard/accountant', request.url));
+              } else if (userRole === 'staff') {
+                return NextResponse.redirect(new URL('/dashboard/staff', request.url));
+              } else if (userRole === 'USER') {
+                return NextResponse.redirect(new URL('/my-bookings', request.url));
+              } else {
+                return NextResponse.redirect(new URL('/dashboard', request.url));
+              }
+            }
+          }
+          
+          // Protect role-specific dashboard routes
+          if (path.startsWith('/dashboard/super-admin')) {
+            if (userRole !== 'superadmin' && userEmail !== 'superadmin@gmail.com') {
+              return NextResponse.redirect(new URL('/dashboard', request.url));
+            }
+          } else if (path.startsWith('/dashboard/admin')) {
+            if (userRole !== 'admin' && userRole !== 'superadmin' && userEmail !== 'superadmin@gmail.com') {
+              return NextResponse.redirect(new URL('/dashboard', request.url));
+            }
+          } else if (path.startsWith('/dashboard/manager')) {
+            if (!['manager', 'admin', 'superadmin'].includes(userRole) && userEmail !== 'superadmin@gmail.com') {
+              return NextResponse.redirect(new URL('/dashboard', request.url));
+            }
+          } else if (path.startsWith('/dashboard/accountant')) {
+            if (!['accountant', 'admin', 'superadmin'].includes(userRole) && userEmail !== 'superadmin@gmail.com') {
+              return NextResponse.redirect(new URL('/dashboard', request.url));
+            }
+          } else if (path.startsWith('/dashboard/staff')) {
+            if (!['staff', 'manager', 'admin', 'superadmin'].includes(userRole) && userEmail !== 'superadmin@gmail.com') {
+              return NextResponse.redirect(new URL('/dashboard', request.url));
+            }
+          }
+        }
+      } catch (error) {
+        // Invalid token, let page handle it
+      }
+    }
   }
 
   return NextResponse.next();
@@ -48,6 +123,7 @@ export const config = {
     '/',
     '/dashboard/:path*',
     '/my-bookings/:path*',
+    '/users/:path*',
     '/login',
     '/register',
     '/(public)/:path*',

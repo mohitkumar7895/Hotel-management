@@ -45,16 +45,9 @@ export default function LoginPage() {
         
         // Wait a bit for cookie to be set, then redirect
         setTimeout(() => {
-          // Only superadmin goes to dashboard, all other users go to my-bookings
-          const userEmail = data.user?.email;
-          const userRole = data.user?.role;
-          
-          if (userEmail === 'superadmin@gmail.com' || userRole === 'superadmin') {
-            window.location.href = '/dashboard';
-          } else {
-            // All other users (public registered + superadmin created) go to my-bookings
-            window.location.href = '/my-bookings';
-          }
+          // Use redirectTo from API response, or fallback to role-based redirect
+          const redirectPath = data.redirectTo || '/my-bookings';
+          window.location.href = redirectPath;
         }, 200);
       } else {
         toast.error(data.error || 'Login failed');
