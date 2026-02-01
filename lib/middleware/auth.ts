@@ -92,3 +92,4 @@ export function hasRole(user: AuthenticatedUser, ...roles: UserRole[]): boolean 
   return roles.includes(user.role);
 }
 
+

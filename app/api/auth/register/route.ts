@@ -6,6 +6,31 @@ import { signJwt } from '@/lib/jwt';
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * Get dashboard path based on user role
+ */
+function getDashboardPath(role: string, email: string): string {
+  // Super Admin
+  if (role === 'superadmin' || email === 'superadmin@gmail.com') {
+    return '/dashboard/super-admin';
+  }
+  
+  // Staff roles
+  switch (role) {
+    case 'admin':
+      return '/dashboard/admin';
+    case 'manager':
+      return '/dashboard/manager';
+    case 'accountant':
+      return '/dashboard/accountant';
+    case 'staff':
+      return '/dashboard/staff';
+    case 'USER':
+    default:
+      return '/user'; // Regular users go to their user dashboard
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -76,6 +101,7 @@ export async function POST(request: NextRequest) {
           email: user.email,
           role: user.role,
         },
+        redirectTo: getDashboardPath(user.role, user.email), // Add redirect path
       },
       { status: 201 }
     );

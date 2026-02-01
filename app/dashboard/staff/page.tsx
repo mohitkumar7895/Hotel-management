@@ -42,7 +42,11 @@ export default function StaffDashboard() {
           return;
         }
 
-        // Verify staff access
+        // Verify staff access - USER role should not access this
+        if (authData.user.role === 'USER') {
+          window.location.href = '/my-bookings';
+          return;
+        }
         if (authData.user.role !== 'staff' && authData.user.role !== 'superadmin' && authData.user.role !== 'admin' && authData.user.role !== 'manager') {
           toast.error('Access denied. Staff only.');
           router.push('/dashboard');

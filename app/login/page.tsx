@@ -45,8 +45,8 @@ export default function LoginPage() {
         
         // Wait a bit for cookie to be set, then redirect
         setTimeout(() => {
-          // Use redirectTo from API response, or fallback to role-based redirect
-          const redirectPath = data.redirectTo || '/my-bookings';
+          // Use redirectTo from API response, or fallback to /user
+          const redirectPath = data.redirectTo || '/user';
           window.location.href = redirectPath;
         }, 200);
       } else {

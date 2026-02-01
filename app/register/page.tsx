@@ -56,7 +56,7 @@ export default function RegisterPage() {
           name: formData.name,
           email: formData.email,
           password: formData.password,
-          role: 'staff', // Default role for public registration
+          role: 'USER', // Default role for public registration
         }),
       });
 
@@ -64,10 +64,12 @@ export default function RegisterPage() {
 
       if (response.ok) {
         toast.success('Registration successful!');
-        // Use window.location for hard redirect to ensure cookie is read
-        // Public registration always creates 'staff' role, so redirect to my-bookings
-        // Superadmin-created users will login separately and get dashboard access
-        window.location.href = '/my-bookings';
+        // Wait a bit for cookie to be set, then redirect
+        setTimeout(() => {
+          // Use redirectTo from API response, or fallback to /user
+          const redirectPath = data.redirectTo || '/user';
+          window.location.href = redirectPath;
+        }, 200);
       } else {
         toast.error(data.error || 'Registration failed');
       }

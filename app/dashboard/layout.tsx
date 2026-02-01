@@ -23,7 +23,6 @@ import {
   User,
   Edit,
   ChevronDown,
-  Building2,
   Calendar,
 } from 'lucide-react';
 
@@ -42,7 +41,6 @@ const menuItems: MenuItem[] = [
   { name: 'Rooms', icon: <DoorOpen className="w-5 h-5" />, href: '/rooms' },
   { name: 'Accounts', icon: <Wallet className="w-5 h-5" />, href: '/accounts', hasSubmenu: true },
   { name: 'Extra Services', icon: <Coffee className="w-5 h-5" />, href: '/extra-services' },
-  { name: 'Clients', icon: <Building2 className="w-5 h-5" />, href: '/clients' },
   { name: 'Reports', icon: <FileText className="w-5 h-5" />, href: '/reports', hasSubmenu: true },
   { name: 'Requests', icon: <MessageSquare className="w-5 h-5" />, href: '/requests' },
   { name: 'Users', icon: <UserCog className="w-5 h-5" />, href: '/users' },
@@ -92,6 +90,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           // Store in localStorage for fast access
           if (data.user) {
             localStorage.setItem('currentUser', JSON.stringify(data.user));
+          }
+          
+          // Redirect USER role to my-bookings immediately
+          if (data.user && data.user.role === 'USER') {
+            window.location.href = '/my-bookings';
+            return;
           }
         } else {
           // Don't redirect from layout, let the page handle it

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import toast from 'react-hot-toast';
-import { Calendar, Bed, DollarSign, CheckCircle, Clock, XCircle, ArrowLeft, User, Mail, Phone, MapPin, Receipt, Coffee, FileText } from 'lucide-react';
+import { Calendar, Bed, DollarSign, CheckCircle, Clock, XCircle, User, Mail, Phone, MapPin, Receipt, Coffee, FileText, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 
 interface Booking {
@@ -77,7 +77,7 @@ interface Invoice {
   createdAt: string;
 }
 
-export default function MyBookingsPage() {
+export default function UserDashboard() {
   const router = useRouter();
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [user, setUser] = useState<any>(null);
@@ -109,21 +109,18 @@ export default function MyBookingsPage() {
       const userData = await userResponse.json();
       setUser(userData.user);
 
-      // Only USER role can access my-bookings - redirect others silently
-      // Check role (case insensitive)
-      const userRole = userData.user.role?.toUpperCase();
-      if (userRole && userRole !== 'USER') {
-        // Redirect based on role without error message
-        const role = userData.user.role?.toLowerCase();
-        if (role === 'superadmin' || userData.user.email === 'superadmin@gmail.com') {
+      // Only USER role can access this page
+      if (userData.user.role && userData.user.role !== 'USER') {
+        // Redirect based on role
+        if (userData.user.role === 'superadmin' || userData.user.email === 'superadmin@gmail.com') {
           window.location.href = '/dashboard/super-admin';
-        } else if (role === 'admin') {
+        } else if (userData.user.role === 'admin') {
           window.location.href = '/dashboard/admin';
-        } else if (role === 'manager') {
+        } else if (userData.user.role === 'manager') {
           window.location.href = '/dashboard/manager';
-        } else if (role === 'accountant') {
+        } else if (userData.user.role === 'accountant') {
           window.location.href = '/dashboard/accountant';
-        } else if (role === 'staff') {
+        } else if (userData.user.role === 'staff') {
           window.location.href = '/dashboard/staff';
         } else {
           window.location.href = '/dashboard';
@@ -131,18 +128,42 @@ export default function MyBookingsPage() {
         return;
       }
       
-      // USER role - continue loading the page
+      // Continue loading page for USER role
 
-      // Fetch bookings
-      const bookingsResponse = await fetch('/api/user/bookings', {
+      // Fetch current active booking (only one booking allowed at a time)
+      const bookingResponse = await fetch('/api/user/booking', {
         credentials: 'include',
         cache: 'no-store',
       });
 
-      if (bookingsResponse.ok) {
-        const bookingsData = await bookingsResponse.json();
-        const fetchedBookings = bookingsData.bookings || [];
-        setBookings(fetchedBookings);
+      if (bookingResponse.ok) {
+        const bookingData = await bookingResponse.json();
+        const fetchedBooking = bookingData.booking;
+        if (fetchedBooking) {
+          setBookings([fetchedBooking]);
+
+          // Fetch services and invoices for this booking
+          const servicesRes = await fetch(`/api/user/services?bookingId=${fetchedBooking._id}`, {
+            credentials: 'include',
+            cache: 'no-store',
+          });
+          if (servicesRes.ok) {
+            const servicesResult = await servicesRes.json();
+            setServicesMap({ [fetchedBooking._id]: servicesResult.services || [] });
+          }
+
+          // Fetch invoices for this booking
+          const invoicesRes = await fetch(`/api/user/invoices?bookingId=${fetchedBooking._id}`, {
+            credentials: 'include',
+            cache: 'no-store',
+          });
+          if (invoicesRes.ok) {
+            const invoicesResult = await invoicesRes.json();
+            setInvoicesMap({ [fetchedBooking._id]: invoicesResult.invoices || [] });
+          }
+        } else {
+          setBookings([]);
+        }
 
         // Fetch services and invoices for each booking
         const servicesData: { [key: string]: Service[] } = {};
@@ -240,7 +261,7 @@ export default function MyBookingsPage() {
             Back to Home
           </Link>
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-2">
-            My <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Bookings</span>
+            My <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Dashboard</span>
           </h1>
           <p className="text-gray-400">View your bookings, services, and bills</p>
         </div>
@@ -277,8 +298,8 @@ export default function MyBookingsPage() {
         {bookings.length === 0 ? (
           <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl p-12 border border-slate-700 text-center">
             <Bed className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-white mb-2">No Bookings Yet</h3>
-            <p className="text-gray-400 mb-6">You haven't made any bookings yet.</p>
+            <h3 className="text-xl font-bold text-white mb-2">No Room Booked Yet</h3>
+            <p className="text-gray-400 mb-6">You haven't booked any room yet. Book your stay now!</p>
             <Link
               href="/book"
               className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all"
@@ -302,7 +323,18 @@ export default function MyBookingsPage() {
                           Room {booking.roomId.roomNumber}
                         </h3>
                         {booking.roomId.roomTypeId && (
-                          <p className="text-gray-400">{booking.roomId.roomTypeId.name}</p>
+                          <>
+                            <p className="text-gray-400">{booking.roomId.roomTypeId.name}</p>
+                            {booking.roomId.roomTypeId.amenities && Array.isArray(booking.roomId.roomTypeId.amenities) && booking.roomId.roomTypeId.amenities.length > 0 && (
+                              <div className="mt-2 flex flex-wrap gap-2">
+                                {booking.roomId.roomTypeId.amenities.map((amenity: string, idx: number) => (
+                                  <span key={idx} className="px-2 py-1 bg-blue-500/20 text-blue-400 text-xs rounded">
+                                    {amenity}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </>
                         )}
                       </div>
                       <div className="text-right">
@@ -579,7 +611,4 @@ export default function MyBookingsPage() {
     </div>
   );
 }
-
-
-
 

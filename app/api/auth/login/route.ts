@@ -11,24 +11,27 @@ export const dynamic = 'force-dynamic';
  * Get dashboard path based on user role
  */
 function getDashboardPath(role: string, email: string): string {
+  // Normalize role for comparison (handle both uppercase and lowercase)
+  const normalizedRole = role?.toUpperCase() || 'USER';
+  
   // Super Admin
-  if (role === 'superadmin' || email === 'superadmin@gmail.com') {
+  if (normalizedRole === 'SUPERADMIN' || email === 'superadmin@gmail.com') {
     return '/dashboard/super-admin';
   }
   
   // Staff roles
-  switch (role) {
-    case 'admin':
+  switch (normalizedRole) {
+    case 'ADMIN':
       return '/dashboard/admin';
-    case 'manager':
+    case 'MANAGER':
       return '/dashboard/manager';
-    case 'accountant':
+    case 'ACCOUNTANT':
       return '/dashboard/accountant';
-    case 'staff':
+    case 'STAFF':
       return '/dashboard/staff';
     case 'USER':
     default:
-      return '/my-bookings'; // Regular users go to their bookings page
+      return '/user'; // Regular users go to their user dashboard
   }
 }
 
@@ -69,13 +72,14 @@ export async function POST(request: NextRequest) {
     // Check if user is a public registered user (exists in Guest table)
     // Public users are those who registered themselves, not created by superadmin
     const guestExists = await Guest.findOne({ email: user.email.toLowerCase() });
-    const isPublicUser = !!guestExists && (user.role === 'staff' || !user.role);
+    const isPublicUser = !!guestExists && (user.role === 'USER' || user.role === 'staff' || !user.role);
 
-    // Generate JWT token
+    // Generate JWT token - ensure role is uppercase for consistency
+    const userRole = user.role || 'USER';
     const token = signJwt({
       userId: user._id.toString(),
       email: user.email,
-      role: user.role,
+      role: userRole.toUpperCase(),
     });
 
     // Create response
@@ -91,7 +95,7 @@ export async function POST(request: NextRequest) {
           role: user.role,
           isPublicUser: isPublicUser, // Flag to identify public registered users
         },
-        redirectTo: getDashboardPath(user.role, user.email), // Add redirect path
+        redirectTo: getDashboardPath(userRole, user.email), // Add redirect path
       },
       { status: 200 }
     );
@@ -114,4 +118,3 @@ export async function POST(request: NextRequest) {
     );
   }
 }
-

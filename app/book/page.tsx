@@ -50,10 +50,58 @@ export default function BookPage() {
   const [nights, setNights] = useState(0);
   const [bookingId, setBookingId] = useState<string | null>(null);
   const [paymentPending, setPaymentPending] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [hasExistingBooking, setHasExistingBooking] = useState(false);
 
   useEffect(() => {
     fetchRoomTypes();
+    checkAuthAndExistingBooking();
   }, []);
+
+  const checkAuthAndExistingBooking = async () => {
+    try {
+      // Check if user is logged in
+      const userResponse = await fetch('/api/auth/me', {
+        credentials: 'include',
+        cache: 'no-store',
+      });
+
+      if (!userResponse.ok) {
+        toast.error('Please login to book a room');
+        router.push('/login');
+        return;
+      }
+
+      const userData = await userResponse.json();
+      setUser(userData.user);
+
+      // Pre-fill user information
+      if (userData.user) {
+        setFormData(prev => ({
+          ...prev,
+          name: userData.user.name || '',
+          email: userData.user.email || '',
+        }));
+      }
+
+      // Check for existing booking
+      const bookingResponse = await fetch('/api/user/booking', {
+        credentials: 'include',
+        cache: 'no-store',
+      });
+
+      if (bookingResponse.ok) {
+        const bookingData = await bookingResponse.json();
+        if (bookingData.booking) {
+          setHasExistingBooking(true);
+          toast.error('You already have an active booking. Only one booking at a time is allowed.');
+          router.push('/user');
+        }
+      }
+    } catch (error) {
+      console.error('Error checking auth:', error);
+    }
+  };
 
   useEffect(() => {
     // Set roomTypeId from URL parameter if present
@@ -175,40 +223,30 @@ export default function BookPage() {
       return;
     }
 
+    // Check if user is logged in
+    if (!user) {
+      toast.error('Please login to book a room');
+      router.push('/login');
+      setLoading(false);
+      return;
+    }
+
     try {
-      // First create guest
-      const guestResponse = await fetch('/api/guests', {
+      // Use the new user booking endpoint
+      const bookingResponse = await fetch('/api/user/book-room', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
+          roomId: formData.selectedRoomId,
+          checkIn: formData.checkIn,
+          checkOut: formData.checkOut,
           name: formData.name,
           email: formData.email,
           phone: formData.phone,
           address: formData.address,
           idProof: formData.idProof,
-        }),
-      });
-
-      if (!guestResponse.ok) {
-        const error = await guestResponse.json();
-        throw new Error(error.error || 'Failed to create guest');
-      }
-
-      const guestData = await guestResponse.json();
-      const guestId = guestData.guest._id;
-
-      // Then create booking
-      const bookingResponse = await fetch('/api/bookings', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          guestId: guestId,
-          roomId: formData.selectedRoomId,
-          checkIn: formData.checkIn,
-          checkOut: formData.checkOut,
-          totalAmount: totalAmount,
-          status: 'pending',
-          paymentStatus: 'pending',
+          paymentMethod: formData.paymentMethod || undefined,
         }),
       });
 
@@ -219,9 +257,17 @@ export default function BookPage() {
 
       const bookingData = await bookingResponse.json();
       setBookingId(bookingData.booking._id);
-      setPaymentPending(true);
-      toast.success('Booking created! Please complete payment to confirm.');
-      setStep(4);
+      
+      if (bookingData.booking.paymentStatus === 'paid') {
+        toast.success('Booking confirmed! Payment processed successfully.');
+        setTimeout(() => {
+          router.push('/user');
+        }, 2000);
+      } else {
+        setPaymentPending(true);
+        toast.success('Booking created! Please complete payment to confirm.');
+        setStep(4);
+      }
     } catch (error: any) {
       toast.error(error.message || 'Failed to create booking');
     } finally {
@@ -252,6 +298,7 @@ export default function BookPage() {
       const response = await fetch(`/api/bookings/${bookingId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           paymentStatus: 'paid',
           status: 'confirmed',
@@ -267,6 +314,7 @@ export default function BookPage() {
       await fetch('/api/accounts/payments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           bookingId: bookingId,
           amount: totalAmount,
@@ -278,7 +326,7 @@ export default function BookPage() {
       toast.success('Payment completed successfully! Booking confirmed.');
       setPaymentPending(false);
       setTimeout(() => {
-        router.push('/my-bookings');
+        router.push('/user');
       }, 2000);
     } catch (error: any) {
       toast.error(error.message || 'Payment failed');
@@ -288,6 +336,27 @@ export default function BookPage() {
   };
 
   const selectedRoomType = roomTypes.find(rt => rt._id === formData.roomTypeId);
+
+  // Show warning if user already has a booking
+  if (hasExistingBooking) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-yellow-500/10 border-2 border-yellow-500/50 rounded-xl p-8 text-center">
+            <AlertCircle className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-white mb-2">You Already Have an Active Booking</h2>
+            <p className="text-gray-300 mb-6">Only one booking at a time is allowed. Please complete or cancel your current booking before making a new one.</p>
+            <Link
+              href="/user"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all"
+            >
+              View My Booking
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950 py-12 px-4 sm:px-6 lg:px-8">

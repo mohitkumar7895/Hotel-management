@@ -29,9 +29,9 @@ export async function middleware(request: NextRequest) {
   }
 
   // Protect dashboard and other private routes
-  // Allow dashboard and my-bookings through - let the page handle auth check
+  // Allow dashboard, my-bookings, and user through - let the page handle auth check
   // This prevents timing issues with cookie setting
-  if (!isPublicRoute && (path.startsWith('/dashboard') || path.startsWith('/my-bookings'))) {
+  if (!isPublicRoute && (path.startsWith('/dashboard') || path.startsWith('/my-bookings') || path.startsWith('/user'))) {
     // Only block if absolutely no token exists
     // If token exists but invalid, let page handle it
     if (!token) {
@@ -43,12 +43,17 @@ export async function middleware(request: NextRequest) {
       try {
         const payload = verifyToken(token);
         if (payload) {
-          const userRole = payload.role;
+          const userRole = payload.role?.toUpperCase();
           const userEmail = payload.email;
+          
+          // If USER tries to access ANY dashboard route, redirect to my-bookings FIRST
+          if (path.startsWith('/dashboard') && (userRole === 'USER' || userRole === undefined || !userRole)) {
+            return NextResponse.redirect(new URL('/my-bookings', request.url));
+          }
           
           // Protect /my-bookings - only USER role can access
           if (path.startsWith('/my-bookings')) {
-            if (userRole !== 'USER') {
+            if (userRole && userRole !== 'USER') {
               // Redirect staff roles to their dashboard
               if (userRole === 'superadmin' || userEmail === 'superadmin@gmail.com') {
                 return NextResponse.redirect(new URL('/dashboard/super-admin', request.url));
@@ -108,6 +113,26 @@ export async function middleware(request: NextRequest) {
               return NextResponse.redirect(new URL('/dashboard', request.url));
             }
           }
+          
+          // Protect /user - only USER role can access
+          if (path.startsWith('/user')) {
+            if (userRole !== 'USER') {
+              // Redirect staff roles to their dashboard
+              if (userRole === 'superadmin' || userEmail === 'superadmin@gmail.com') {
+                return NextResponse.redirect(new URL('/dashboard/super-admin', request.url));
+              } else if (userRole === 'admin') {
+                return NextResponse.redirect(new URL('/dashboard/admin', request.url));
+              } else if (userRole === 'manager') {
+                return NextResponse.redirect(new URL('/dashboard/manager', request.url));
+              } else if (userRole === 'accountant') {
+                return NextResponse.redirect(new URL('/dashboard/accountant', request.url));
+              } else if (userRole === 'staff') {
+                return NextResponse.redirect(new URL('/dashboard/staff', request.url));
+              } else {
+                return NextResponse.redirect(new URL('/dashboard', request.url));
+              }
+            }
+          }
         }
       } catch (error) {
         // Invalid token, let page handle it
@@ -123,6 +148,7 @@ export const config = {
     '/',
     '/dashboard/:path*',
     '/my-bookings/:path*',
+    '/user/:path*',
     '/users/:path*',
     '/login',
     '/register',
